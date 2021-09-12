@@ -33,29 +33,3 @@ test {
     minHeapSize = "128m"
     maxHeapSize = "512m"
 }
-
-
-
-//region Push to repository on build.
-java {
-    withJavadocJar()
-    withSourcesJar()
-}
-
-publishing {
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/hirshi001/nettypackets")
-            credentials {
-                username = project.findProperty("name")
-                password = project.findProperty("key")
-            }
-        }
-    }
-    publications {
-        gpr(MavenPublication) {
-            from(components.java)
-        }
-    }
-}
