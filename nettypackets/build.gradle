@@ -3,11 +3,11 @@ import java.time.*
 plugins {
     // Apply the java-library plugin for API and implementation separation.
     id 'java-library'
-    id 'maven-publish'
+    id 'maven'
 }
 
 group = 'com.hirshi001'
-version = '1.0.1'
+version = '1.0.3'
 
 repositories {
     mavenCentral()
@@ -46,10 +46,10 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/hirshi001/maven")
+            url = uri("https://maven.pkg.github.com/hirshi001/nettypackets")
             credentials {
-                username = project.findProperty("user") ?: System.getenv("USERNAME")
-                password = project.findProperty("key") ?: System.getenv("TOKEN")
+                username = project.findProperty("name")
+                password = project.findProperty("key")
             }
         }
     }

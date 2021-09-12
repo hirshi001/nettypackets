@@ -7,6 +7,8 @@ import nettypackets.ByteBufUtil;
 import nettypackets.PacketRegistry;
 import nettypackets.SidedPacketRegistryContainer;
 
+import java.nio.ByteBuffer;
+
 public class PacketHelper {
 
     public static ByteBuf toBytes(PacketRegistry registry, Packet p){
@@ -43,7 +45,6 @@ public class PacketHelper {
 
         //get the id
         int id = buf.readInt();
-
         ByteBuf msg = buf.readBytes(size);
 
         //get the registry
