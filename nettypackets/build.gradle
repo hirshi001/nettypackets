@@ -16,6 +16,14 @@ repositories {
     mavenCentral()
 }
 
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
+}
+
 
 dependencies {
     // Use JUnit test framework.
