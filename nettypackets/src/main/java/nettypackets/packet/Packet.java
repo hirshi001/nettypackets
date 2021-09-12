@@ -8,7 +8,7 @@ public abstract class Packet {
     public Packet(){}
 
     public void writeBytes(ByteBuf out){
-        System.out.println("test");
+        System.out.println("test #2");
     }
 
     public void readBytes(ByteBuf in){  }
