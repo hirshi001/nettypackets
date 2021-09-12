@@ -1,15 +1,8 @@
-
-buildscript{
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.vanniktech:gradle-maven-publish-plugin:0.17.0'
-    }
+plugins {
+    id 'java-library'
+    id 'maven-publish'
 }
 
-apply plugin: 'java-library'
-apply plugin: 'com.vanniktech.maven.publish'
 
 group = 'com.hirshi001'
 version = '1.0.3'
