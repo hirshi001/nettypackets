@@ -4,10 +4,13 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import nettypackets.ByteBufUtil;
-import nettypackets.PacketRegistry;
-import nettypackets.SidedPacketRegistryContainer;
+import nettypackets.packetregistry.DefaultPacketRegistry;
+import nettypackets.packetregistry.PacketRegistry;
+import nettypackets.packetregistry.SidedPacketRegistryContainer;
 
-import java.nio.ByteBuffer;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 public class PacketHelper {
 
@@ -19,7 +22,7 @@ public class PacketHelper {
         int startIndex = buf.writerIndex();
         buf.writerIndex(startIndex+8);
 
-        ByteBufUtil.writeStringToBuf(registry.registryName, buf);
+        ByteBufUtil.writeStringToBuf(registry.getRegistryName(), buf);
         p.writeBytes(buf);
 
         int size = buf.writerIndex()-startIndex-8;
@@ -34,7 +37,18 @@ public class PacketHelper {
         return buf;
     }
 
-    public static Packet handle(ByteBuf buf, ChannelHandlerContext ctx, SidedPacketRegistryContainer packetRegistries) throws Exception{
+    public static List<Packet> handle(ByteBuf buf, ChannelHandlerContext ctx, SidedPacketRegistryContainer packetRegistries) throws Exception{
+        Packet packet = handleOnePacket(buf, ctx, packetRegistries);
+        if(packet==null) return Collections.emptyList();
+        List<Packet> packets = new LinkedList<>();
+        packets.add(packet);
+        while((packet=handleOnePacket(buf, ctx, packetRegistries))!=null){
+            packets.add(packet);
+        }
+        return packets;
+    }
+
+    private static Packet handleOnePacket(ByteBuf buf, ChannelHandlerContext ctx, SidedPacketRegistryContainer packetRegistries){
         if(buf.readableBytes()<4) return null;
 
         //get the size

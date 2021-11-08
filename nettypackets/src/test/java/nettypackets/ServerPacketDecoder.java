@@ -1,8 +1,12 @@
 package nettypackets;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.group.ChannelGroup;
 import nettypackets.encoderdecoder.PacketDecoder;
+import nettypackets.packetregistry.SidedPacketRegistryContainer;
+
+import java.util.List;
 
 public class ServerPacketDecoder extends PacketDecoder {
 
@@ -11,6 +15,13 @@ public class ServerPacketDecoder extends PacketDecoder {
     public ServerPacketDecoder(SidedPacketRegistryContainer serverRegistries, ChannelGroup group) {
         super(serverRegistries);
         this.group = group;
+
+    }
+
+    @Override
+    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+        Thread.sleep(1000);
+        super.decode(ctx, in, out);
     }
 
     @Override

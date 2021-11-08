@@ -1,4 +1,4 @@
-package nettypackets;
+package nettypackets.packetregistry;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,11 +11,11 @@ public class SidedPacketRegistryContainer {
 
     private final Map<String, PacketRegistry> packetRegistryMap = new HashMap<>();
 
-    public PacketRegistry create(String registryName){
+    public PacketRegistry addRegistry(PacketRegistry registry){
+        String registryName = registry.getRegistryName();
         if(packetRegistryMap.containsKey(registryName)){
             throw new IllegalArgumentException("The registry name [" + registryName + "] is already in use!");
         }
-        PacketRegistry registry = new PacketRegistry(registryName);
         packetRegistryMap.put(registryName, registry);
         return registry;
     }

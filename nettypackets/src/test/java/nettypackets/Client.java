@@ -11,6 +11,9 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import nettypackets.encoderdecoder.PacketDecoder;
 import nettypackets.encoderdecoder.PacketEncoder;
 import nettypackets.packet.Packet;
+import nettypackets.packetregistry.DefaultPacketRegistry;
+import nettypackets.packetregistry.PacketRegistry;
+import nettypackets.packetregistry.SidedPacketRegistryContainer;
 
 public class Client {
 
@@ -18,7 +21,7 @@ public class Client {
     private final String host;
     private final SidedPacketRegistryContainer clientRegistries;
 
-    private SocketChannel channel;
+    public SocketChannel channel;
 
     public Client(String host, int port, SidedPacketRegistryContainer clientRegistries) {
         this.port = port;
@@ -27,7 +30,7 @@ public class Client {
     }
 
     public void sendPacket(PacketRegistry registry, Packet p) {
-        channel.writeAndFlush(new Pair<>(registry, p));
+        channel.write(new Pair<>(registry, p));
     }
 
     public void run() throws Exception {

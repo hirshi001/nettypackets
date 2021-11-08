@@ -4,6 +4,9 @@
 package nettypackets;
 
 import nettypackets.packet.PacketHolder;
+import nettypackets.packetregistry.DefaultPacketRegistry;
+import nettypackets.packetregistry.PacketRegistry;
+import nettypackets.packetregistry.SidedPacketRegistryContainer;
 import org.junit.Test;
 
 public class LibraryTest {
@@ -20,14 +23,14 @@ public class LibraryTest {
 
 
     @Test
-    public void test() {
+    public void test() throws InterruptedException {
 
         serverPacketRegistries = new SidedPacketRegistryContainer();
-        serverRegistry = serverPacketRegistries.create("iogames");
+        serverRegistry = serverPacketRegistries.addRegistry(new DefaultPacketRegistry("iogames"));
         serverRegistry.register(new PacketHolder<>(TestPacket::new, TestPacket::serverHandle, TestPacket.class), 0);
 
         clientPacketRegistries = new SidedPacketRegistryContainer();
-        clientRegistry = clientPacketRegistries.create("iogames");
+        clientRegistry = clientPacketRegistries.addRegistry(new DefaultPacketRegistry("iogames"));
         clientRegistry.register(new PacketHolder<>(TestPacket::new, TestPacket::clientHandle, TestPacket.class), 0);
 
 
@@ -43,11 +46,7 @@ public class LibraryTest {
 
         thread.start();
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        Thread.sleep(1000);
 
         client = new Client("localhost", 8080, clientPacketRegistries);
         thread = new Thread(){
@@ -60,22 +59,19 @@ public class LibraryTest {
         };
         thread.start();
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        Thread.sleep(1000);
 
         for(int i=0;i<10;i++){
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            client.sendPacket(clientRegistry, new TestPacket("hi"));
-        }
 
+            //Thread.sleep(100);
+            client.sendPacket(clientRegistry, new TestPacket("hi " + i));
+        }
+        client.channel.flush();
+        Thread.sleep(1000);
+        server.channels.flush();
+        Thread.sleep(1000);
 
 
     }
+
 }

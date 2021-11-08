@@ -3,7 +3,7 @@ package nettypackets.encoderdecoder;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
-import nettypackets.SidedPacketRegistryContainer;
+import nettypackets.packetregistry.SidedPacketRegistryContainer;
 import nettypackets.packet.PacketHelper;
 
 import java.util.List;

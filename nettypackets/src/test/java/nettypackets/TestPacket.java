@@ -36,8 +36,8 @@ public class TestPacket extends Packet {
     }
 
     public void serverHandle(ChannelHandlerContext ctx){
-        LibraryTest.server.sendPacketToAllConnected(LibraryTest.serverRegistry, this);
         System.out.println("[Client -> Server]: " + message);
+        LibraryTest.server.sendPacketToAllConnected(LibraryTest.serverRegistry, this);
     }
 
     public void clientHandle(ChannelHandlerContext ctx){

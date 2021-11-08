@@ -11,16 +11,20 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.util.concurrent.DefaultEventExecutor;
 import io.netty.util.concurrent.GlobalEventExecutor;
+import nettypackets.encoderdecoder.PacketEncoder;
 import nettypackets.packet.Packet;
 import nettypackets.packet.PacketHelper;
+import nettypackets.packetregistry.DefaultPacketRegistry;
+import nettypackets.packetregistry.PacketRegistry;
+import nettypackets.packetregistry.SidedPacketRegistryContainer;
 
 public class Server {
 
     private final int port;
     private final SidedPacketRegistryContainer serverRegistries;
-    public final ChannelGroup channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
-
+    public final ChannelGroup channels = new DefaultChannelGroup("connected-channels", new DefaultEventExecutor());
 
     public Server(int port, SidedPacketRegistryContainer serverRegistries) {
         this.port = port;
@@ -28,8 +32,7 @@ public class Server {
     }
 
     public void sendPacketToAllConnected(PacketRegistry registry, Packet msg) {
-        ByteBuf buf = PacketHelper.toBytes(registry, msg);
-        channels.writeAndFlush(buf);
+        channels.write(new Pair<>(registry, msg));
     }
 
     public void startUp() throws InterruptedException {
@@ -43,7 +46,7 @@ public class Server {
                     .childHandler(new ChannelInitializer<SocketChannel>() { // (4)
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(new ServerPacketDecoder(serverRegistries, channels));
+                            ch.pipeline().addLast(new ServerPacketDecoder(serverRegistries, channels), new PacketEncoder());
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)          // (5)
@@ -64,5 +67,22 @@ public class Server {
         }
     }
 
+    /*
+        A method which checks if 2 line segments intersect
+        The arguments are integers where each pair of integers represent an endpoint of the line
+     */
+    public static boolean intersect(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4) {
+        int d = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
+        if (d == 0) return false;
 
+        int n = (x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3);
+        int m = (x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3);
+
+        int u = n / d;
+        int v = m / d;
+
+        return u >= 0 && u <= 1 && v >= 0 && v <= 1;
+    }
 }
+
+
