@@ -55,7 +55,7 @@ public class PacketHelper {
         int size = buf.getInt(buf.readerIndex());
 
         if(buf.readableBytes()<size+8) return null;
-        buf.readInt();
+        buf.skipBytes(4);
 
         //get the id
         int id = buf.readInt();

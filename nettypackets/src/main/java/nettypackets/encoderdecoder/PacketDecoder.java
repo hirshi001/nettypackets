@@ -10,8 +10,7 @@ import java.util.List;
 
 public class PacketDecoder extends ByteToMessageDecoder {
 
-
-    private final SidedPacketRegistryContainer serverRegistries;
+    public final SidedPacketRegistryContainer serverRegistries;
 
     public PacketDecoder(SidedPacketRegistryContainer serverRegistries){
         this.serverRegistries = serverRegistries;
