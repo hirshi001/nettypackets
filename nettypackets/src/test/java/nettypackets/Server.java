@@ -32,7 +32,7 @@ public class Server {
     }
 
     public void sendPacketToAllConnected(PacketRegistry registry, Packet msg) {
-        channels.write(new Pair<>(registry, msg));
+        channels.writeAndFlush(new Pair<>(registry, msg));
     }
 
     public void startUp() throws InterruptedException {

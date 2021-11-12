@@ -37,6 +37,29 @@ public class PacketHelper {
         return buf;
     }
 
+
+    private static Packet handleOnePacket(ByteBuf buf, ChannelHandlerContext ctx, SidedPacketRegistryContainer packetRegistries){
+        if(buf.readableBytes()<8) return null;
+
+        //get the size
+        int size = buf.getInt(buf.readerIndex());
+
+        if(buf.readableBytes()<size+8) return null;
+        buf.readInt(); //get the size bytes outta here
+
+        //get the id
+        int id = buf.readInt();
+        ByteBuf msg = buf.readBytes(size);
+
+        //get the registry
+        String namespace = ByteBufUtil.readStringFromBuf(msg);
+        PacketRegistry registry = packetRegistries.get(namespace);
+
+        //get the packet holder
+        PacketHolder<? extends Packet> holder = registry.getPacketHolder(id);
+        return holder.handlePacket(msg, ctx, size);
+    }
+
     public static List<Packet> handle(ByteBuf buf, ChannelHandlerContext ctx, SidedPacketRegistryContainer packetRegistries) throws Exception{
         Packet packet = handleOnePacket(buf, ctx, packetRegistries);
         if(packet==null) return Collections.emptyList();
@@ -48,28 +71,5 @@ public class PacketHelper {
         return packets;
     }
 
-    private static Packet handleOnePacket(ByteBuf buf, ChannelHandlerContext ctx, SidedPacketRegistryContainer packetRegistries){
-        if(buf.readableBytes()<4) return null;
-
-        //get the size
-        int size = buf.getInt(buf.readerIndex());
-
-        if(buf.readableBytes()<size+8) return null;
-        buf.skipBytes(4);
-
-        //get the id
-        int id = buf.readInt();
-        ByteBuf msg = buf.readBytes(size);
-
-        //get the registry
-        String namespace = ByteBufUtil.readStringFromBuf(msg);
-        PacketRegistry registry = packetRegistries.get(namespace);
-
-        msg.markWriterIndex();
-
-        //get the packet holder
-        PacketHolder<? extends Packet> holder = registry.getPacketHolder(id);
-        return holder.handlePacket(msg, ctx, size);
-    }
 
 }

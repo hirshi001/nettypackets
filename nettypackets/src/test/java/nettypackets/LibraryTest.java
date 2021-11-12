@@ -28,10 +28,12 @@ public class LibraryTest {
         serverPacketRegistries = new SidedPacketRegistryContainer();
         serverRegistry = serverPacketRegistries.addRegistry(new DefaultPacketRegistry("iogames"));
         serverRegistry.register(new PacketHolder<>(TestPacket::new, TestPacket::serverHandle, TestPacket.class), 0);
+        serverRegistry.register(new PacketHolder<>(TestPacket2::new, TestPacket2::serverHandle, TestPacket2.class), 1);
 
         clientPacketRegistries = new SidedPacketRegistryContainer();
         clientRegistry = clientPacketRegistries.addRegistry(new DefaultPacketRegistry("iogames"));
         clientRegistry.register(new PacketHolder<>(TestPacket::new, TestPacket::clientHandle, TestPacket.class), 0);
+        clientRegistry.register(new PacketHolder<>(TestPacket2::new, TestPacket2::clientHandle, TestPacket2.class), 1);
 
 
 
@@ -62,10 +64,14 @@ public class LibraryTest {
 
         Thread.sleep(1000);
 
-        for(int i=0;i<10;i++){
+        for(int i=0;i<50;i++){
 
             //Thread.sleep(100);
-            client.sendPacket(clientRegistry, new TestPacket("hi " + i));
+            if(Math.random()>0.5) {
+                client.sendPacket(clientRegistry, new TestPacket("1 hi " + i));
+            }else{
+                client.sendPacket(clientRegistry, new TestPacket2("2 hi " + i));
+            }
         }
         client.channel.flush();
         Thread.sleep(1000);
