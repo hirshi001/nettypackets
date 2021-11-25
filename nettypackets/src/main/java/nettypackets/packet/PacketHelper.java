@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import nettypackets.ByteBufUtil;
+import nettypackets.PacketHandlerContext;
 import nettypackets.packetregistry.DefaultPacketRegistry;
 import nettypackets.packetregistry.PacketRegistry;
 import nettypackets.packetregistry.SidedPacketRegistryContainer;
@@ -38,7 +39,7 @@ public class PacketHelper {
     }
 
 
-    private static Packet handleOnePacket(ByteBuf buf, ChannelHandlerContext ctx, SidedPacketRegistryContainer packetRegistries){
+    private static Packet handleOnePacket(ByteBuf buf, ChannelHandlerContext ctx, SidedPacketRegistryContainer packetRegistries) throws Exception{
         if(buf.readableBytes()<8) return null;
 
         //get the size
@@ -57,18 +58,21 @@ public class PacketHelper {
 
         //get the packet holder
         PacketHolder<? extends Packet> holder = registry.getPacketHolder(id);
-        return holder.handlePacket(msg, ctx, size);
+        PacketHandlerContext packetContext = new PacketHandlerContext();
+        packetContext.set(ctx, registry, packetRegistries);
+        return holder.handlePacket(msg, ctx, size, packetContext);
     }
 
-    public static List<Packet> handle(ByteBuf buf, ChannelHandlerContext ctx, SidedPacketRegistryContainer packetRegistries) throws Exception{
-        Packet packet = handleOnePacket(buf, ctx, packetRegistries);
-        if(packet==null) return Collections.emptyList();
-        List<Packet> packets = new LinkedList<>();
-        packets.add(packet);
-        while((packet=handleOnePacket(buf, ctx, packetRegistries))!=null){
-            packets.add(packet);
+    public static void handle(ByteBuf buf, ChannelHandlerContext ctx, SidedPacketRegistryContainer packetRegistries, List<Packet> packetsHandledList) throws Exception{
+        Packet packet;
+        if(packetsHandledList==null){
+            while(handleOnePacket(buf, ctx, packetRegistries) !=null);
         }
-        return packets;
+        else{
+            while((packet=handleOnePacket(buf, ctx, packetRegistries))!=null) {
+                packetsHandledList.add(packet);
+            }
+        }
     }
 
 

@@ -19,7 +19,7 @@ public class PacketDecoder extends ByteToMessageDecoder {
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-        PacketHelper.handle(in, ctx, serverRegistries);
+        PacketHelper.handle(in, ctx, serverRegistries, null);
     }
 
 }

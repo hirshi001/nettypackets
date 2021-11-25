@@ -19,19 +19,13 @@ public class ServerPacketDecoder extends PacketDecoder {
     }
 
     @Override
-    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-        Thread.sleep(1000);
-        super.decode(ctx, in, out);
-    }
-
-    @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
         group.add(ctx.channel());
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
         group.remove(ctx.channel());
     }

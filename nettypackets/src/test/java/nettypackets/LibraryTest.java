@@ -35,8 +35,6 @@ public class LibraryTest {
         clientRegistry.register(new PacketHolder<>(TestPacket::new, TestPacket::clientHandle, TestPacket.class), 0);
         clientRegistry.register(new PacketHolder<>(TestPacket2::new, TestPacket2::clientHandle, TestPacket2.class), 1);
 
-
-
         server = new Server(8080, serverPacketRegistries);
         Thread thread = new Thread(){
             @Override

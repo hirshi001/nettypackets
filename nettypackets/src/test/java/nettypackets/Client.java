@@ -21,7 +21,7 @@ public class Client {
     private final String host;
     private final SidedPacketRegistryContainer clientRegistries;
 
-    public SocketChannel channel;
+    public ChannelHandlerContext channel;
 
     public Client(String host, int port, SidedPacketRegistryContainer clientRegistries) {
         this.port = port;
@@ -30,7 +30,7 @@ public class Client {
     }
 
     public void sendPacket(PacketRegistry registry, Packet p) {
-        channel.write(new Pair<>(registry, p));
+        channel.channel().write(new Pair<>(registry, p));
     }
 
     public void run() throws Exception {
@@ -51,10 +51,15 @@ public class Client {
                                     System.out.println("bytes recieved: " + in.toString());
                                     super.decode(ctx, in, out);
                                 }
+
+                                @Override
+                                public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+                                    super.channelRegistered(ctx);
+                                    channel = ctx;
+                                }
                             },
                             new PacketEncoder()
                     );
-                    channel = ch;
                 }
             });
 

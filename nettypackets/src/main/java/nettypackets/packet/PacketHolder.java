@@ -3,6 +3,8 @@ package nettypackets.packet;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import nettypackets.PacketHandlerContext;
+import nettypackets.packetregistry.PacketRegistry;
 
 import java.util.function.Supplier;
 
@@ -18,12 +20,12 @@ public class PacketHolder<T extends Packet>{
         this.packetClass = packetClass;
     }
 
-    public Packet handlePacket(ByteBuf buf, ChannelHandlerContext ctx, int size){
+    public Packet handlePacket(ByteBuf buf, ChannelHandlerContext ctx, int size, PacketHandlerContext handlerContext){
         T packet = supplier.get();
         int numBytes = buf.readableBytes();
         try {
             packet.readBytes(buf);
-            if(handler!=null)handler.handle(packet, ctx);
+            if(handler!=null)handler.handle(packet, handlerContext);
         }catch(Exception e){
             e.printStackTrace();
             System.err.println(this + " | Number of Bytes = "+numBytes + ", Size = "+size);
