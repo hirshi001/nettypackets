@@ -9,9 +9,7 @@ import nettypackets.packetregistry.DefaultPacketRegistry;
 import nettypackets.packetregistry.PacketRegistry;
 import nettypackets.packetregistry.SidedPacketRegistryContainer;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class PacketHelper {
 
@@ -63,14 +61,14 @@ public class PacketHelper {
         return holder.handlePacket(msg, ctx, size, packetContext);
     }
 
-    public static void handle(ByteBuf buf, ChannelHandlerContext ctx, SidedPacketRegistryContainer packetRegistries, List<Packet> packetsHandledList) throws Exception{
+    public static void handle(ByteBuf buf, ChannelHandlerContext ctx, SidedPacketRegistryContainer packetRegistries, Collection<Packet> packetsHandledCollection) throws Exception{
         Packet packet;
-        if(packetsHandledList==null){
+        if(packetsHandledCollection==null){
             while(handleOnePacket(buf, ctx, packetRegistries) !=null);
         }
         else{
             while((packet=handleOnePacket(buf, ctx, packetRegistries))!=null) {
-                packetsHandledList.add(packet);
+                packetsHandledCollection.add(packet);
             }
         }
     }
