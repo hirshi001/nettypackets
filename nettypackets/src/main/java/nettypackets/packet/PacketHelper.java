@@ -11,6 +11,7 @@ import nettypackets.packetregistry.SidedPacketRegistryContainer;
 
 import java.util.*;
 
+//Class not used, just a placeholder to store possibly useful code.
 public class PacketHelper {
 
 

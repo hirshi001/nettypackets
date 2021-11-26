@@ -2,6 +2,7 @@ package nettypackets.packet;
 
 
 import io.netty.buffer.ByteBuf;
+import nettypackets.PacketHandlerContext;
 
 import java.util.function.Supplier;
 
@@ -18,11 +19,9 @@ public class PacketHolder<T extends Packet>{
         this.packetClass = packetClass;
     }
 
-    @SuppressWarnings("unchecked")
     public Packet getPacket(ByteBuf buf){
         T packet = supplier.get();
         packet.readBytes(buf);
-        packet.packetHandler = (PacketHandler<Packet>) handler;
         return packet;
     }
 

@@ -3,6 +3,9 @@
  */
 package nettypackets;
 
+import logger.ConsoleColors;
+import logger.DateStringFunction;
+import logger.Logger;
 import nettypackets.packet.PacketHolder;
 import nettypackets.packetregistry.DefaultPacketRegistry;
 import nettypackets.packetregistry.PacketRegistry;
@@ -25,8 +28,10 @@ public class LibraryTest {
     @Test
     public void test() throws InterruptedException {
 
+        System.setOut(new Logger(System.out, System.err, new DateStringFunction(ConsoleColors.RED, "[","]")).debugShort(true).debug());
+
         serverPacketRegistries = new SidedPacketRegistryContainer();
-        serverRegistry = serverPacketRegistries.addRegistry(new DefaultPacketRegistry("iogaemes"));
+        serverRegistry = serverPacketRegistries.addRegistry(new DefaultPacketRegistry("iogames"));
         serverRegistry.register(new PacketHolder<>(TestPacket::new, TestPacket::serverHandle, TestPacket.class), 0);
         serverRegistry.register(new PacketHolder<>(TestPacket2::new, TestPacket2::serverHandle, TestPacket2.class), 1);
 

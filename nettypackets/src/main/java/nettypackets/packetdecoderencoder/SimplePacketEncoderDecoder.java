@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBuf;
 import nettypackets.ByteBufUtil;
 import nettypackets.PacketHandlerContext;
 import nettypackets.packet.Packet;
+import nettypackets.packet.PacketHandler;
 import nettypackets.packet.PacketHolder;
 import nettypackets.packetregistry.PacketRegistry;
 import nettypackets.packetregistry.SidedPacketRegistryContainer;
@@ -36,6 +37,14 @@ public class SimplePacketEncoderDecoder implements PacketEncoderDecoder {
         PacketHolder<? extends Packet> holder = registry.getPacketHolder(id); // Get the packet holder
 
         Packet packet = holder.getPacket(msg); // Get the packet
+        packet.packetHandlerContext = new PacketHandlerContext();
+
+        //set the variables in the packet handler context
+        packet.packetHandlerContext.packetHandler = (PacketHandler<Packet>)  holder.handler; //should work
+        packet.packetHandlerContext.sidedPacketRegistryContainer = container;
+        packet.packetHandlerContext.packetRegistry = registry;
+
+
         return packet;
     }
 

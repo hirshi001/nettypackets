@@ -8,7 +8,7 @@ public interface PacketHandler<T extends Packet> {
 
     static final PacketHandler NO_HANDLE = new PacketHandler() {
         @Override
-        public void handle(Packet packet, PacketHandlerContext ctx) {
+        public void handle(Packet packet, ChannelHandlerContext ctx) {
             // Do nothing
         }
     };
@@ -18,6 +18,6 @@ public interface PacketHandler<T extends Packet> {
         return (PacketHandler<A>) NO_HANDLE;
     }
 
-    public void handle(T packet, PacketHandlerContext ctx);
+    public void handle(T packet, ChannelHandlerContext ctx);
 
 }

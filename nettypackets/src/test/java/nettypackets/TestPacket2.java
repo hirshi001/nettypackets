@@ -37,12 +37,12 @@ public class TestPacket2 extends Packet {
         message = new String(msgBytes, StandardCharsets.UTF_8);
     }
 
-    public void serverHandle(PacketHandlerContext packetHandlerContext){
+    public void serverHandle(ChannelHandlerContext packetHandlerContext){
         System.out.println("[Client -> Server]: " + message);
         LibraryTest.server.sendPacketToAllConnected(LibraryTest.serverRegistry, this);
     }
 
-    public void clientHandle(PacketHandlerContext packetHandlerContext){
+    public void clientHandle(ChannelHandlerContext packetHandlerContext){
         System.out.println("[Server -> Client]: " + message);
     }
 }
