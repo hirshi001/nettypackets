@@ -26,7 +26,7 @@ public class LibraryTest {
     public void test() throws InterruptedException {
 
         serverPacketRegistries = new SidedPacketRegistryContainer();
-        serverRegistry = serverPacketRegistries.addRegistry(new DefaultPacketRegistry("iogames"));
+        serverRegistry = serverPacketRegistries.addRegistry(new DefaultPacketRegistry("iogaemes"));
         serverRegistry.register(new PacketHolder<>(TestPacket::new, TestPacket::serverHandle, TestPacket.class), 0);
         serverRegistry.register(new PacketHolder<>(TestPacket2::new, TestPacket2::serverHandle, TestPacket2.class), 1);
 

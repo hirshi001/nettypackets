@@ -13,6 +13,8 @@ import java.util.*;
 
 public class PacketHelper {
 
+
+    /*
     public static ByteBuf toBytes(PacketRegistry registry, Packet p){
         return toBytes(Unpooled.buffer(32), registry, p);
     }
@@ -35,7 +37,6 @@ public class PacketHelper {
         buf.writerIndex(lastIdx);
         return buf;
     }
-
 
     private static Packet handleOnePacket(ByteBuf buf, ChannelHandlerContext ctx, SidedPacketRegistryContainer packetRegistries) throws Exception{
         if(buf.readableBytes()<8) return null;
@@ -61,6 +62,7 @@ public class PacketHelper {
         return holder.handlePacket(msg, ctx, size, packetContext);
     }
 
+
     public static void handle(ByteBuf buf, ChannelHandlerContext ctx, SidedPacketRegistryContainer packetRegistries, Collection<Packet> packetsHandledCollection) throws Exception{
         Packet packet;
         if(packetsHandledCollection==null){
@@ -72,6 +74,7 @@ public class PacketHelper {
             }
         }
     }
+     */
 
 
 }

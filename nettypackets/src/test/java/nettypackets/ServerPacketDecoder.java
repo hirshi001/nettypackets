@@ -1,19 +1,17 @@
 package nettypackets;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.group.ChannelGroup;
-import nettypackets.encoderdecoder.PacketDecoder;
+import nettypackets.iohandlers.PacketOutboundDecoder;
+import nettypackets.packetdecoderencoder.PacketEncoderDecoder;
 import nettypackets.packetregistry.SidedPacketRegistryContainer;
 
-import java.util.List;
-
-public class ServerPacketDecoder extends PacketDecoder {
+public class ServerPacketDecoder extends PacketOutboundDecoder {
 
     ChannelGroup group;
 
-    public ServerPacketDecoder(SidedPacketRegistryContainer serverRegistries, ChannelGroup group) {
-        super(serverRegistries);
+    public ServerPacketDecoder(SidedPacketRegistryContainer serverRegistries, ChannelGroup group, PacketEncoderDecoder encoderDecoder) {
+        super(serverRegistries, encoderDecoder);
         this.group = group;
 
     }

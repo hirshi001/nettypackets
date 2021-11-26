@@ -1,7 +1,6 @@
 package nettypackets;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -12,11 +11,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.DefaultEventExecutor;
-import io.netty.util.concurrent.GlobalEventExecutor;
-import nettypackets.encoderdecoder.PacketEncoder;
+import nettypackets.iohandlers.PacketInboundEncoder;
 import nettypackets.packet.Packet;
-import nettypackets.packet.PacketHelper;
-import nettypackets.packetregistry.DefaultPacketRegistry;
+import nettypackets.packetdecoderencoder.PacketEncoderDecoder;
 import nettypackets.packetregistry.PacketRegistry;
 import nettypackets.packetregistry.SidedPacketRegistryContainer;
 
@@ -46,7 +43,7 @@ public class Server {
                     .childHandler(new ChannelInitializer<SocketChannel>() { // (4)
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(new ServerPacketDecoder(serverRegistries, channels), new PacketEncoder());
+                            ch.pipeline().addLast(new ServerPacketDecoder(serverRegistries, channels, PacketEncoderDecoder.DEFAULT_ENCODER_DECODER), new PacketInboundEncoder(PacketEncoderDecoder.DEFAULT_ENCODER_DECODER));
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)          // (5)

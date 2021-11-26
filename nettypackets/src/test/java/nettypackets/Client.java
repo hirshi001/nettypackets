@@ -6,10 +6,10 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import nettypackets.encoderdecoder.PacketDecoder;
-import nettypackets.encoderdecoder.PacketEncoder;
+import nettypackets.iohandlers.PacketOutboundDecoder;
+import nettypackets.iohandlers.PacketInboundEncoder;
 import nettypackets.packet.Packet;
-import nettypackets.packetregistry.DefaultPacketRegistry;
+import nettypackets.packetdecoderencoder.PacketEncoderDecoder;
 import nettypackets.packetregistry.PacketRegistry;
 import nettypackets.packetregistry.SidedPacketRegistryContainer;
 
@@ -45,7 +45,7 @@ public class Client {
                 @Override
                 protected void initChannel(SocketChannel ch) {
                     ch.pipeline().addLast(
-                            new PacketDecoder(clientRegistries){
+                            new PacketOutboundDecoder(clientRegistries, PacketEncoderDecoder.DEFAULT_ENCODER_DECODER){
                                 @Override
                                 protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
                                     System.out.println("bytes recieved: " + in.toString());
@@ -58,7 +58,7 @@ public class Client {
                                     channel = ctx;
                                 }
                             },
-                            new PacketEncoder()
+                            new PacketInboundEncoder(PacketEncoderDecoder.DEFAULT_ENCODER_DECODER)
                     );
                 }
             });
