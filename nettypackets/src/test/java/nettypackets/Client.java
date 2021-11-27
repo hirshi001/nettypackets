@@ -45,7 +45,7 @@ public class Client {
                 @Override
                 protected void initChannel(SocketChannel ch) {
                     ch.pipeline().addLast(
-                            new PacketOutboundDecoder(clientRegistries, PacketEncoderDecoder.DEFAULT_ENCODER_DECODER){
+                            new PacketOutboundDecoder(clientRegistries){
                                 @Override
                                 protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
                                     System.out.println("bytes recieved: " + in.toString());
@@ -58,7 +58,7 @@ public class Client {
                                     channel = ctx;
                                 }
                             },
-                            new PacketInboundEncoder(PacketEncoderDecoder.DEFAULT_ENCODER_DECODER)
+                            new PacketInboundEncoder(clientRegistries)
                     );
                 }
             });

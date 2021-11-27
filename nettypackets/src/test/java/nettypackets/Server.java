@@ -43,7 +43,7 @@ public class Server {
                     .childHandler(new ChannelInitializer<SocketChannel>() { // (4)
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(new ServerPacketDecoder(serverRegistries, channels, PacketEncoderDecoder.DEFAULT_ENCODER_DECODER), new PacketInboundEncoder(PacketEncoderDecoder.DEFAULT_ENCODER_DECODER));
+                            ch.pipeline().addLast(new ServerPacketDecoder(serverRegistries, channels), new PacketInboundEncoder(serverRegistries));
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)          // (5)

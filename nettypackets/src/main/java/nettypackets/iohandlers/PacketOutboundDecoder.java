@@ -13,18 +13,16 @@ public class PacketOutboundDecoder extends ByteToMessageDecoder {
 
     public final SidedPacketRegistryContainer serverRegistries;
 
-    public PacketEncoderDecoder encoderDecoder;
 
-    public PacketOutboundDecoder(SidedPacketRegistryContainer serverRegistries, PacketEncoderDecoder encoderDecode){
+    public PacketOutboundDecoder(SidedPacketRegistryContainer serverRegistries){
         this.serverRegistries = serverRegistries;
-        this.encoderDecoder = encoderDecode;
     }
 
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
         Packet packet;
-        while((packet = encoderDecoder.decode(serverRegistries, in))!=null){
+        while((packet = serverRegistries.packetEncoderDecoder.decode(serverRegistries, in))!=null){
             packet.handle(ctx);
         }
     }

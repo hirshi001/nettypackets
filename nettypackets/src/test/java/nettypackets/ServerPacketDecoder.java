@@ -10,8 +10,8 @@ public class ServerPacketDecoder extends PacketOutboundDecoder {
 
     ChannelGroup group;
 
-    public ServerPacketDecoder(SidedPacketRegistryContainer serverRegistries, ChannelGroup group, PacketEncoderDecoder encoderDecoder) {
-        super(serverRegistries, encoderDecoder);
+    public ServerPacketDecoder(SidedPacketRegistryContainer serverRegistries, ChannelGroup group) {
+        super(serverRegistries);
         this.group = group;
 
     }

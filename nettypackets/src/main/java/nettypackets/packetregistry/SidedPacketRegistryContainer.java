@@ -1,15 +1,23 @@
 package nettypackets.packetregistry;
 
+import nettypackets.packetdecoderencoder.PacketEncoderDecoder;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class SidedPacketRegistryContainer {
 
-    public SidedPacketRegistryContainer(){
 
+    public PacketEncoderDecoder packetEncoderDecoder;
+    private final Map<String, PacketRegistry> packetRegistryMap = new HashMap<>();
+
+    public SidedPacketRegistryContainer(){
+        this(PacketEncoderDecoder.DEFAULT_ENCODER_DECODER);
     }
 
-    private final Map<String, PacketRegistry> packetRegistryMap = new HashMap<>();
+    public SidedPacketRegistryContainer(PacketEncoderDecoder packetEncoderDecoder){
+        this.packetEncoderDecoder = packetEncoderDecoder;
+    }
 
     public PacketRegistry addRegistry(PacketRegistry registry){
         String registryName = registry.getRegistryName();

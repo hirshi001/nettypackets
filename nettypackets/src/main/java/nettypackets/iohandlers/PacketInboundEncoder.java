@@ -5,19 +5,19 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import nettypackets.Pair;
 import nettypackets.packet.Packet;
-import nettypackets.packetdecoderencoder.PacketEncoderDecoder;
 import nettypackets.packetregistry.PacketRegistry;
+import nettypackets.packetregistry.SidedPacketRegistryContainer;
 
 public class PacketInboundEncoder extends MessageToByteEncoder<Pair<PacketRegistry, Packet>> {
 
-    private final PacketEncoderDecoder encoderDecoder;
+    private final SidedPacketRegistryContainer container;
 
-    public PacketInboundEncoder(PacketEncoderDecoder encoderDecoder){
-        this.encoderDecoder = encoderDecoder;
+    public PacketInboundEncoder(SidedPacketRegistryContainer container){
+        this.container = container;
     }
 
     @Override
     protected void encode(ChannelHandlerContext ctx, Pair<PacketRegistry, Packet> msg, ByteBuf out) throws Exception {
-        encoderDecoder.encode(msg.b, msg.a, out);
+        container.packetEncoderDecoder.encode(msg.b, msg.a, out);
     }
 }
