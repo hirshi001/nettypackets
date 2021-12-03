@@ -3,27 +3,41 @@ package nettypackets.iohandlers;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import nettypackets.networkdata.NetworkData;
+import nettypackets.networkdata.OutboundPacketStats;
 import nettypackets.packet.Packet;
-import nettypackets.packetdecoderencoder.PacketEncoderDecoder;
-import nettypackets.packetregistry.SidedPacketRegistryContainer;
 
 import java.util.List;
 
 public class PacketOutboundDecoder extends ByteToMessageDecoder {
 
-    public final SidedPacketRegistryContainer serverRegistries;
+    public final NetworkData networkData;
+    public final OutboundPacketStats stats;
 
 
-    public PacketOutboundDecoder(SidedPacketRegistryContainer serverRegistries){
-        this.serverRegistries = serverRegistries;
+    public PacketOutboundDecoder(NetworkData networkData){
+        this.networkData = networkData;
+        stats =  new OutboundPacketStats();
     }
-
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
         Packet packet;
-        while((packet = serverRegistries.packetEncoderDecoder.decode(serverRegistries, in))!=null){
+        int readerIndex = in.readerIndex();
+        while ((packet = getPacket(in, ctx)) != null) {
             packet.handle(ctx);
+            stats.addPacket(in.readerIndex() - readerIndex);
+            readerIndex = in.readerIndex();
+        }
+    }
+
+    protected Packet getPacket(ByteBuf in, ChannelHandlerContext ctx){
+        try {
+            return networkData.decode(in);
+        }catch(Exception e){
+            ctx.close();
+            e.printStackTrace();
+            return null;
         }
     }
 

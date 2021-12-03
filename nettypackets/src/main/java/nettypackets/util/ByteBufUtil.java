@@ -1,4 +1,4 @@
-package nettypackets;
+package nettypackets.util;
 
 import io.netty.buffer.ByteBuf;
 
@@ -6,6 +6,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 public class ByteBufUtil {
+
+    private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
     public static void writeStringToBuf(Charset charset, String msg, ByteBuf buf){
 
@@ -19,10 +21,11 @@ public class ByteBufUtil {
         buf.writeInt(size);
         buf.writerIndex(index1+4+size);
 
+
     }
 
     public static void writeStringToBuf(String msg, ByteBuf buf){
-        writeStringToBuf(StandardCharsets.UTF_8, msg, buf);
+        writeStringToBuf(DEFAULT_CHARSET, msg, buf);
     }
 
     public static String readStringFromBuf(Charset charset, ByteBuf buf){
@@ -30,7 +33,7 @@ public class ByteBufUtil {
     }
 
     public static String readStringFromBuf(ByteBuf buf){
-        return readStringFromBuf(StandardCharsets.UTF_8, buf);
+        return readStringFromBuf(DEFAULT_CHARSET, buf);
     }
 
 

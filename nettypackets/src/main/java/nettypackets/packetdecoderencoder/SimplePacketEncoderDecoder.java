@@ -1,20 +1,24 @@
 package nettypackets.packetdecoderencoder;
 
 import io.netty.buffer.ByteBuf;
-import nettypackets.ByteBufUtil;
-import nettypackets.PacketHandlerContext;
+import nettypackets.util.ByteBufUtil;
 import nettypackets.packet.Packet;
 import nettypackets.packet.PacketHandler;
 import nettypackets.packet.PacketHolder;
 import nettypackets.packetregistry.PacketRegistry;
 import nettypackets.packetregistry.SidedPacketRegistryContainer;
 
-import java.util.NoSuchElementException;
-
 public class SimplePacketEncoderDecoder implements PacketEncoderDecoder {
 
-    public SimplePacketEncoderDecoder() {
+    public int maxSize;
+
+    public SimplePacketEncoderDecoder(int maxSize) {
         super();
+        this.maxSize = maxSize;
+    }
+
+    public SimplePacketEncoderDecoder(){
+        this(2048);
     }
 
     @Override
@@ -22,26 +26,25 @@ public class SimplePacketEncoderDecoder implements PacketEncoderDecoder {
         if(in.readableBytes()<8) return null; // If there is not enough bytes to read the length and the id
 
 
-        int size = in.getInt(in.readerIndex()); // Get the size of the packet
+        int size = in.getInt(in.readerIndex()); // Get the size of the packet without changing the reader index
+        if(size>maxSize) throw new IllegalArgumentException("Packet size is too big"); // If the size is too big
 
         if(in.readableBytes()<size+8) return null; // If there is not enough bytes to read the packet
         in.readInt(); // Read the size of the packet (we already know it)
 
-        int id = in.readInt(); // Read the id of the packet
+        int id = in.readInt();
         ByteBuf msg = in.readBytes(size); // Read the packet
 
-        String registryName = ByteBufUtil.readStringFromBuf(msg); // Read the registry name
-        PacketRegistry registry = container.get(registryName); // Get the registry
+        String registryName = ByteBufUtil.readStringFromBuf(msg);
+        PacketRegistry registry = container.get(registryName);
         if(registry==null) throw new NullPointerException("The registry name " + registryName + " does not exist in the SidedPacketRegistryContainer " + container);
 
-        PacketHolder<? extends Packet> holder = registry.getPacketHolder(id); // Get the packet holder
+        PacketHolder<? extends Packet> holder = registry.getPacketHolder(id);
 
-        Packet packet = holder.getPacket(msg); // Get the packet
-        packet.packetHandlerContext = new PacketHandlerContext();
+        Packet packet = holder.getPacket();
+        packet.readBytes(msg);
 
-        //set the variables in the packet handler context
-        packet.packetHandlerContext.packetHandler = (PacketHandler<Packet>)  holder.handler; //should work
-        packet.packetHandlerContext.sidedPacketRegistryContainer = container;
+        packet.packetHandlerContext.packetHandler = (PacketHandler<Packet>) holder.handler; //should work
         packet.packetHandlerContext.packetRegistry = registry;
 
 
@@ -49,7 +52,9 @@ public class SimplePacketEncoderDecoder implements PacketEncoderDecoder {
     }
 
     @Override
-    public void encode(Packet packet, PacketRegistry registry, ByteBuf out) {
+    public void encode(Packet packet, ByteBuf out) {
+        PacketRegistry registry = packet.packetHandlerContext.packetRegistry;
+
         int startIndex = out.writerIndex(); // start index
         out.writerIndex(startIndex+8); // Reserve space for the length and the id
 

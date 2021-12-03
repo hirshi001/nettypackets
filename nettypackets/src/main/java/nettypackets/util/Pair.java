@@ -1,4 +1,4 @@
-package nettypackets;
+package nettypackets.util;
 
 public class Pair<A, B>{
 

@@ -2,12 +2,14 @@ package nettypackets.packet;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import nettypackets.PacketHandlerContext;
+import nettypackets.util.PacketHandlerContext;
+import nettypackets.networkdata.NetworkData;
 import nettypackets.packetregistry.PacketRegistry;
 
 public abstract class Packet {
 
     public PacketHandlerContext packetHandlerContext = new PacketHandlerContext();
+    public NetworkData networkData;
 
     public Packet(){}
 
@@ -17,6 +19,11 @@ public abstract class Packet {
 
     public final void handle(ChannelHandlerContext ctx){
         packetHandlerContext.packetHandler.handle(this, ctx);
+    }
+
+    public Packet setPacketRegistry(PacketRegistry registry){
+        packetHandlerContext.packetRegistry = registry;
+        return this;
     }
 
 }

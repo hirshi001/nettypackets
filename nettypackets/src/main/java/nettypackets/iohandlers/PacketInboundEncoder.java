@@ -3,21 +3,23 @@ package nettypackets.iohandlers;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
-import nettypackets.Pair;
+import nettypackets.networkdata.NetworkData;
 import nettypackets.packet.Packet;
-import nettypackets.packetregistry.PacketRegistry;
-import nettypackets.packetregistry.SidedPacketRegistryContainer;
 
-public class PacketInboundEncoder extends MessageToByteEncoder<Pair<PacketRegistry, Packet>> {
+public class PacketInboundEncoder extends MessageToByteEncoder<Packet> {
 
-    private final SidedPacketRegistryContainer container;
+    private final NetworkData networkData;
 
-    public PacketInboundEncoder(SidedPacketRegistryContainer container){
-        this.container = container;
+    public PacketInboundEncoder(NetworkData networkData){
+        this.networkData = networkData;
     }
 
     @Override
-    protected void encode(ChannelHandlerContext ctx, Pair<PacketRegistry, Packet> msg, ByteBuf out) throws Exception {
-        container.packetEncoderDecoder.encode(msg.b, msg.a, out);
+    protected void encode(ChannelHandlerContext ctx, Packet msg, ByteBuf out) throws Exception {
+        try {
+            networkData.encode(msg, out);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 }

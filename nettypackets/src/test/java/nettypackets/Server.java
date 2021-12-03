@@ -1,10 +1,8 @@
 package nettypackets;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.*;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -12,24 +10,28 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.DefaultEventExecutor;
 import nettypackets.iohandlers.PacketInboundEncoder;
+import nettypackets.networkdata.NetworkData;
 import nettypackets.packet.Packet;
 import nettypackets.packetdecoderencoder.PacketEncoderDecoder;
 import nettypackets.packetregistry.PacketRegistry;
 import nettypackets.packetregistry.SidedPacketRegistryContainer;
 
+import java.util.List;
+
 public class Server {
 
     private final int port;
-    private final SidedPacketRegistryContainer serverRegistries;
+    private final NetworkData networkData;
     public final ChannelGroup channels = new DefaultChannelGroup("connected-channels", new DefaultEventExecutor());
+    public int packetsSent = 0, packetsReceived = 0;
 
-    public Server(int port, SidedPacketRegistryContainer serverRegistries) {
+    public Server(int port, NetworkData networkData) {
         this.port = port;
-        this.serverRegistries = serverRegistries;
+        this.networkData = networkData;
     }
 
-    public void sendPacketToAllConnected(PacketRegistry registry, Packet msg) {
-        channels.writeAndFlush(new Pair<>(registry, msg));
+    public void sendPacketToAllConnected(Packet msg) {
+        channels.writeAndFlush(msg);
     }
 
     public void startUp() throws InterruptedException {
@@ -43,7 +45,24 @@ public class Server {
                     .childHandler(new ChannelInitializer<SocketChannel>() { // (4)
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(new ServerPacketDecoder(serverRegistries, channels), new PacketInboundEncoder(serverRegistries));
+                            ch.pipeline().addLast(
+                                    new ServerPacketDecoder(networkData, channels){
+                                        @Override
+                                        protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+                                            Packet packet;
+                                            while ((packet = super.getPacket(in, ctx)) != null) {
+                                                packet.handle(ctx);
+                                                packetsReceived++;
+                                            }
+                                        }
+                                    },
+                                    new PacketInboundEncoder(networkData){
+                                        @Override
+                                        protected void encode(ChannelHandlerContext ctx, Packet msg, ByteBuf out) throws Exception {
+                                            packetsSent++;
+                                            super.encode(ctx, msg, out);
+                                        }
+                                    });
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)          // (5)

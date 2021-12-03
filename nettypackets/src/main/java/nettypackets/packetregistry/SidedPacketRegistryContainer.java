@@ -8,16 +8,9 @@ import java.util.Map;
 public class SidedPacketRegistryContainer {
 
 
-    public PacketEncoderDecoder packetEncoderDecoder;
     private final Map<String, PacketRegistry> packetRegistryMap = new HashMap<>();
 
-    public SidedPacketRegistryContainer(){
-        this(PacketEncoderDecoder.DEFAULT_ENCODER_DECODER);
-    }
-
-    public SidedPacketRegistryContainer(PacketEncoderDecoder packetEncoderDecoder){
-        this.packetEncoderDecoder = packetEncoderDecoder;
-    }
+    public SidedPacketRegistryContainer(){  }
 
     public PacketRegistry addRegistry(PacketRegistry registry){
         String registryName = registry.getRegistryName();

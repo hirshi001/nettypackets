@@ -6,7 +6,11 @@ package nettypackets;
 import logger.ConsoleColors;
 import logger.DateStringFunction;
 import logger.Logger;
+import nettypackets.networkdata.DefaultNetworkData;
+import nettypackets.networkdata.NetworkData;
 import nettypackets.packet.PacketHolder;
+import nettypackets.packetdecoderencoder.PacketEncoderDecoder;
+import nettypackets.packetdecoderencoder.SimplePacketEncoderDecoder;
 import nettypackets.packetregistry.DefaultPacketRegistry;
 import nettypackets.packetregistry.PacketRegistry;
 import nettypackets.packetregistry.SidedPacketRegistryContainer;
@@ -14,15 +18,18 @@ import org.junit.Test;
 
 public class LibraryTest {
 
+    public static NetworkData serverNetworkData;
     public static SidedPacketRegistryContainer serverPacketRegistries;
     public static PacketRegistry serverRegistry;
 
-
+    public static NetworkData clientNetworkData;
     public static SidedPacketRegistryContainer clientPacketRegistries;
     public static PacketRegistry clientRegistry;
 
     public static Server server;
     public static Client client;
+
+    public static PacketEncoderDecoder encoderDecoder;
 
 
     @Test
@@ -40,7 +47,11 @@ public class LibraryTest {
         clientRegistry.register(new PacketHolder<>(TestPacket::new, TestPacket::clientHandle, TestPacket.class), 0);
         clientRegistry.register(new PacketHolder<>(TestPacket2::new, TestPacket2::clientHandle, TestPacket2.class), 1);
 
-        server = new Server(8080, serverPacketRegistries);
+        encoderDecoder = new SimplePacketEncoderDecoder();
+        serverNetworkData = new DefaultNetworkData(encoderDecoder, serverPacketRegistries);
+        clientNetworkData = new DefaultNetworkData(encoderDecoder, clientPacketRegistries);
+
+        server = new Server(8080, serverNetworkData);
         Thread thread = new Thread(){
             @Override
             public void run() {
@@ -54,7 +65,7 @@ public class LibraryTest {
 
         Thread.sleep(1000);
 
-        client = new Client("localhost", 8080, clientPacketRegistries);
+        client = new Client("localhost", 8080, clientNetworkData);
         thread = new Thread(){
             @Override
             public void run() {
@@ -67,19 +78,21 @@ public class LibraryTest {
 
         Thread.sleep(1000);
 
-        for(int i=0;i<50;i++){
+        int numOfPackets = 50;
+        for(int i=0;i<numOfPackets;i++){
 
             //Thread.sleep(100);
-            if(Math.random()>0.5) {
-                client.sendPacket(clientRegistry, new TestPacket("1 hi " + i));
-            }else{
-                client.sendPacket(clientRegistry, new TestPacket2("2 hi " + i));
-            }
+            client.sendPacket(new TestPacket("1 hi " + i).setPacketRegistry(clientRegistry));
+
+               // client.sendPacket(new TestPacket2("2 hi " + i).setPacketRegistry(clientRegistry));
         }
         client.channel.flush();
         Thread.sleep(1000);
         server.channels.flush();
         Thread.sleep(1000);
+
+        assert server.packetsReceived == client.packetsSent && client.packetsSent == numOfPackets;
+        assert server.packetsSent == client.packetsReceived;
 
 
     }

@@ -1,16 +1,5 @@
 package nettypackets.packet;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelHandlerContext;
-import nettypackets.ByteBufUtil;
-import nettypackets.PacketHandlerContext;
-import nettypackets.packetregistry.DefaultPacketRegistry;
-import nettypackets.packetregistry.PacketRegistry;
-import nettypackets.packetregistry.SidedPacketRegistryContainer;
-
-import java.util.*;
-
 //Class not used, just a placeholder to store possibly useful code.
 public class PacketHelper {
 

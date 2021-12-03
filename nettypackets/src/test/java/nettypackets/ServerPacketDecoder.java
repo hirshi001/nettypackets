@@ -3,15 +3,14 @@ package nettypackets;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.group.ChannelGroup;
 import nettypackets.iohandlers.PacketOutboundDecoder;
-import nettypackets.packetdecoderencoder.PacketEncoderDecoder;
-import nettypackets.packetregistry.SidedPacketRegistryContainer;
+import nettypackets.networkdata.NetworkData;
 
 public class ServerPacketDecoder extends PacketOutboundDecoder {
 
     ChannelGroup group;
 
-    public ServerPacketDecoder(SidedPacketRegistryContainer serverRegistries, ChannelGroup group) {
-        super(serverRegistries);
+    public ServerPacketDecoder(NetworkData networkData, ChannelGroup group) {
+        super(networkData);
         this.group = group;
 
     }

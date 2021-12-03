@@ -8,6 +8,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import nettypackets.iohandlers.PacketOutboundDecoder;
 import nettypackets.iohandlers.PacketInboundEncoder;
+import nettypackets.networkdata.NetworkData;
 import nettypackets.packet.Packet;
 import nettypackets.packetdecoderencoder.PacketEncoderDecoder;
 import nettypackets.packetregistry.PacketRegistry;
@@ -19,18 +20,19 @@ public class Client {
 
     private final int port;
     private final String host;
-    private final SidedPacketRegistryContainer clientRegistries;
+    private final NetworkData networkData;
+    public int packetsSent = 0, packetsReceived = 0;
 
     public ChannelHandlerContext channel;
 
-    public Client(String host, int port, SidedPacketRegistryContainer clientRegistries) {
+    public Client(String host, int port, NetworkData networkData) {
         this.port = port;
         this.host = host;
-        this.clientRegistries = clientRegistries;
+        this.networkData = networkData;
     }
 
-    public void sendPacket(PacketRegistry registry, Packet p) {
-        channel.channel().write(new Pair<>(registry, p));
+    public void sendPacket(Packet packet) {
+        channel.channel().writeAndFlush(packet);
     }
 
     public void run() throws Exception {
@@ -45,20 +47,20 @@ public class Client {
                 @Override
                 protected void initChannel(SocketChannel ch) {
                     ch.pipeline().addLast(
-                            new PacketOutboundDecoder(clientRegistries){
-                                @Override
-                                protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-                                    System.out.println("bytes recieved: " + in.toString());
-                                    super.decode(ctx, in, out);
-                                }
-
+                            new PacketOutboundDecoder(networkData){
                                 @Override
                                 public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
                                     super.channelRegistered(ctx);
                                     channel = ctx;
                                 }
                             },
-                            new PacketInboundEncoder(clientRegistries)
+                            new PacketInboundEncoder(networkData){
+                                @Override
+                                protected void encode(ChannelHandlerContext ctx, Packet msg, ByteBuf out) throws Exception {
+                                    super.encode(ctx, msg, out);
+                                    packetsSent++;
+                                }
+                            }
                     );
                 }
             });

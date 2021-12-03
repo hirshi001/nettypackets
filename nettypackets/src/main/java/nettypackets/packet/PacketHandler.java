@@ -1,12 +1,10 @@
 package nettypackets.packet;
 
 import io.netty.channel.ChannelHandlerContext;
-import nettypackets.PacketHandlerContext;
-import nettypackets.packetregistry.PacketRegistry;
 
 public interface PacketHandler<T extends Packet> {
 
-    static final PacketHandler NO_HANDLE = new PacketHandler() {
+    static final PacketHandler<?> NO_HANDLE = new PacketHandler<Packet>() {
         @Override
         public void handle(Packet packet, ChannelHandlerContext ctx) {
             // Do nothing
