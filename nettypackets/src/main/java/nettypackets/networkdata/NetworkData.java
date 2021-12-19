@@ -3,13 +3,13 @@ package nettypackets.networkdata;
 import io.netty.buffer.ByteBuf;
 import nettypackets.packet.Packet;
 import nettypackets.packetdecoderencoder.PacketEncoderDecoder;
-import nettypackets.packetregistry.SidedPacketRegistryContainer;
+import nettypackets.packetregistrycontainer.PacketRegistryContainer;
 
 public interface NetworkData {
 
     PacketEncoderDecoder getPacketEncoderDecoder();
 
-    SidedPacketRegistryContainer getPacketRegistryContainer();
+    PacketRegistryContainer getPacketRegistryContainer();
 
     default Packet decode(ByteBuf in){
         Packet packet = getPacketEncoderDecoder().decode(getPacketRegistryContainer(), in);

@@ -2,7 +2,7 @@ package nettypackets.packetdecoderencoder;
 
 import io.netty.buffer.ByteBuf;
 import nettypackets.packet.Packet;
-import nettypackets.packetregistry.SidedPacketRegistryContainer;
+import nettypackets.packetregistrycontainer.PacketRegistryContainer;
 
 public interface PacketEncoderDecoder {
 
@@ -14,7 +14,7 @@ public interface PacketEncoderDecoder {
      * @param in the ByteBuf to read from
      * @return the decoded packet or null if the packet could not be decoded because there were not enough bytes
      */
-    public Packet decode(SidedPacketRegistryContainer container, ByteBuf in);
+    public Packet decode(PacketRegistryContainer container, ByteBuf in);
 
     /**
      * Encodes a single packet into the given ByteBuf.

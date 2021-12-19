@@ -20,10 +20,12 @@ public class DefaultPacketRegistry implements PacketRegistry{
         this.registryName = registryName;
     }
 
-    public final void register(PacketHolder<?> packetHolder, int id){
+    @Override
+    public final PacketRegistry register(PacketHolder<?> packetHolder, int id){
         classIdMap.put(packetHolder.packetClass, id);
         intToPacketHolderMap.put(id, packetHolder);
         packetHolderIntMap.put(packetHolder, id);
+        return this;
     }
 
     @Override

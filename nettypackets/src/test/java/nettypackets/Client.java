@@ -10,11 +10,6 @@ import nettypackets.iohandlers.PacketOutboundDecoder;
 import nettypackets.iohandlers.PacketInboundEncoder;
 import nettypackets.networkdata.NetworkData;
 import nettypackets.packet.Packet;
-import nettypackets.packetdecoderencoder.PacketEncoderDecoder;
-import nettypackets.packetregistry.PacketRegistry;
-import nettypackets.packetregistry.SidedPacketRegistryContainer;
-
-import java.util.List;
 
 public class Client {
 

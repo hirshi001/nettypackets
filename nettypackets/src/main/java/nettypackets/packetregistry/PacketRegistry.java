@@ -5,7 +5,7 @@ import nettypackets.packet.PacketHolder;
 
 public interface PacketRegistry {
 
-    public void register(PacketHolder<?> packetHolder, int id);
+    public PacketRegistry register(PacketHolder<?> packetHolder, int id);
 
     public PacketHolder<?> getPacketHolder(int id);
 

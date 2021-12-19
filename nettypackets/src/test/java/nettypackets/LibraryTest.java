@@ -3,31 +3,34 @@
  */
 package nettypackets;
 
+import io.netty.bootstrap.Bootstrap;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import logger.ConsoleColors;
 import logger.DateStringFunction;
 import logger.Logger;
-import nettypackets.networkdata.DefaultNetworkData;
-import nettypackets.networkdata.NetworkData;
+import nettypackets.network.clientfactory.ClientFactory;
+import nettypackets.network.serverfactory.ServerFactory;
 import nettypackets.packet.PacketHolder;
 import nettypackets.packetdecoderencoder.PacketEncoderDecoder;
 import nettypackets.packetdecoderencoder.SimplePacketEncoderDecoder;
 import nettypackets.packetregistry.DefaultPacketRegistry;
 import nettypackets.packetregistry.PacketRegistry;
-import nettypackets.packetregistry.SidedPacketRegistryContainer;
 import org.junit.Test;
 
 public class LibraryTest {
 
-    public static NetworkData serverNetworkData;
-    public static SidedPacketRegistryContainer serverPacketRegistries;
+
+    public static final String NAME = "iogames";
     public static PacketRegistry serverRegistry;
 
-    public static NetworkData clientNetworkData;
-    public static SidedPacketRegistryContainer clientPacketRegistries;
     public static PacketRegistry clientRegistry;
 
-    public static Server server;
-    public static Client client;
+    public static nettypackets.network.server.Server server;
+    public static nettypackets.network.client.Client client;
 
     public static PacketEncoderDecoder encoderDecoder;
 
@@ -35,65 +38,47 @@ public class LibraryTest {
     @Test
     public void test() throws InterruptedException {
 
+        encoderDecoder = new SimplePacketEncoderDecoder();
         System.setOut(new Logger(System.out, System.err, new DateStringFunction(ConsoleColors.RED, "[","]")).debugShort(true).debug());
 
-        serverPacketRegistries = new SidedPacketRegistryContainer();
-        serverRegistry = serverPacketRegistries.addRegistry(new DefaultPacketRegistry("iogames"));
-        serverRegistry.register(new PacketHolder<>(TestPacket::new, TestPacket::serverHandle, TestPacket.class), 0);
-        serverRegistry.register(new PacketHolder<>(TestPacket2::new, TestPacket2::serverHandle, TestPacket2.class), 1);
 
-        clientPacketRegistries = new SidedPacketRegistryContainer();
-        clientRegistry = clientPacketRegistries.addRegistry(new DefaultPacketRegistry("iogames"));
-        clientRegistry.register(new PacketHolder<>(TestPacket::new, TestPacket::clientHandle, TestPacket.class), 0);
-        clientRegistry.register(new PacketHolder<>(TestPacket2::new, TestPacket2::clientHandle, TestPacket2.class), 1);
 
-        encoderDecoder = new SimplePacketEncoderDecoder();
-        serverNetworkData = new DefaultNetworkData(encoderDecoder, serverPacketRegistries);
-        clientNetworkData = new DefaultNetworkData(encoderDecoder, clientPacketRegistries);
+        ServerFactory serverFactory = ServerFactory.multiPacketRegistryServerFactory().
+                setPort(8080).
+                setPacketEncoderDecoder(encoderDecoder).
+                setBootstrap(new ServerBootstrap().
+                        group(new NioEventLoopGroup(), new NioEventLoopGroup()).
+                        channel(NioServerSocketChannel.class).
+                        option(ChannelOption.SO_BACKLOG, 128).
+                        childOption(ChannelOption.SO_KEEPALIVE, true)).
+                addPacketRegistry(serverRegistry = new DefaultPacketRegistry(NAME).
+                        register(new PacketHolder<>(TestPacket::new, TestPacket::serverHandle, TestPacket.class), 0).
+                        register(new PacketHolder<>(TestPacket2::new, TestPacket2::serverHandle, TestPacket2.class), 1)
+                );
 
-        server = new Server(8080, serverNetworkData);
-        Thread thread = new Thread(){
-            @Override
-            public void run() {
-                try {
-                    server.startUp();
-                }catch(Exception ignored){}
-            }
-        };
 
-        thread.start();
 
-        Thread.sleep(1000);
+        ClientFactory clientFactory = ClientFactory.multiPacketRegistryClientFactory().
+                setIpAddress("localhost").
+                setPort(8080).
+                setPacketEncoderDecoder(encoderDecoder).
+                setBootstrap(new Bootstrap().
+                        group(new NioEventLoopGroup()).
+                        channel(NioSocketChannel.class).
+                        option(ChannelOption.SO_KEEPALIVE, true)
+                ).
+                addPacketRegistry(clientRegistry = new DefaultPacketRegistry(NAME).
+                        register(new PacketHolder<>(TestPacket::new, TestPacket::clientHandle, TestPacket.class), 0).
+                        register(new PacketHolder<>(TestPacket2::new, TestPacket2::clientHandle, TestPacket2.class), 1)
+                );
 
-        client = new Client("localhost", 8080, clientNetworkData);
-        thread = new Thread(){
-            @Override
-            public void run() {
-                try {
-                    client.run();
-                }catch(Exception e){}
-            }
-        };
-        thread.start();
+        server = serverFactory.connectServerNowUninterruptibly();
+
+        client = clientFactory.connectAsync().await().getNow();
+
+        client.sendPacket(new TestPacket("test").setPacketRegistry(clientRegistry));
 
         Thread.sleep(1000);
-
-        int numOfPackets = 50;
-        for(int i=0;i<numOfPackets;i++){
-
-            //Thread.sleep(100);
-            client.sendPacket(new TestPacket("1 hi " + i).setPacketRegistry(clientRegistry));
-
-               // client.sendPacket(new TestPacket2("2 hi " + i).setPacketRegistry(clientRegistry));
-        }
-        client.channel.flush();
-        Thread.sleep(1000);
-        server.channels.flush();
-        Thread.sleep(1000);
-
-        assert server.packetsReceived == client.packetsSent && client.packetsSent == numOfPackets;
-        assert server.packetsSent == client.packetsReceived;
-
 
     }
 

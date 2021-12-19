@@ -1,12 +1,12 @@
 package nettypackets.packetdecoderencoder;
 
 import io.netty.buffer.ByteBuf;
-import nettypackets.util.ByteBufUtil;
 import nettypackets.packet.Packet;
 import nettypackets.packet.PacketHandler;
 import nettypackets.packet.PacketHolder;
 import nettypackets.packetregistry.PacketRegistry;
-import nettypackets.packetregistry.SidedPacketRegistryContainer;
+import nettypackets.packetregistrycontainer.PacketRegistryContainer;
+import nettypackets.util.ByteBufUtil;
 
 public class SimplePacketEncoderDecoder implements PacketEncoderDecoder {
 
@@ -22,7 +22,7 @@ public class SimplePacketEncoderDecoder implements PacketEncoderDecoder {
     }
 
     @Override
-    public Packet decode(SidedPacketRegistryContainer container, ByteBuf in) {
+    public Packet decode(PacketRegistryContainer container, ByteBuf in) {
         if(in.readableBytes()<8) return null; // If there is not enough bytes to read the length and the id
 
 

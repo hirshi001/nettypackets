@@ -12,9 +12,7 @@ import io.netty.util.concurrent.DefaultEventExecutor;
 import nettypackets.iohandlers.PacketInboundEncoder;
 import nettypackets.networkdata.NetworkData;
 import nettypackets.packet.Packet;
-import nettypackets.packetdecoderencoder.PacketEncoderDecoder;
-import nettypackets.packetregistry.PacketRegistry;
-import nettypackets.packetregistry.SidedPacketRegistryContainer;
+import nettypackets.packetdecoderencoder.ServerPacketDecoder;
 
 import java.util.List;
 

@@ -13,6 +13,7 @@ public class PacketOutboundDecoder extends ByteToMessageDecoder {
 
     public final NetworkData networkData;
     public final OutboundPacketStats stats;
+    public ChannelHandlerContext channel;
 
 
     public PacketOutboundDecoder(NetworkData networkData){
@@ -29,6 +30,19 @@ public class PacketOutboundDecoder extends ByteToMessageDecoder {
             stats.addPacket(in.readerIndex() - readerIndex);
             readerIndex = in.readerIndex();
         }
+    }
+
+    @Override
+    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+        super.channelRegistered(ctx);
+        this.channel = ctx;
+
+    }
+
+    @Override
+    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
+        super.channelUnregistered(ctx);
+        this.channel = null;
     }
 
     protected Packet getPacket(ByteBuf in, ChannelHandlerContext ctx){
