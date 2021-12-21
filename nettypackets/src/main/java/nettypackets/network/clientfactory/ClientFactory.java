@@ -79,6 +79,10 @@ public class ClientFactory {
         return this;
     }
 
+    public PacketRegistryContainer getPacketRegistryContainer() {
+        return packetRegistryContainer;
+    }
+
     public Client connectClientNow() throws InterruptedException {
         Client client = new ClientBuilder().build();
         client.connect(bootstrap).sync();
