@@ -1,6 +1,7 @@
 package nettypackets.packetdecoderencoder;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
 import nettypackets.packet.Packet;
 import nettypackets.packetregistrycontainer.PacketRegistryContainer;
 

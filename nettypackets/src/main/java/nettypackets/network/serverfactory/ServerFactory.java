@@ -1,27 +1,22 @@
 package nettypackets.network.serverfactory;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.util.concurrent.DefaultEventExecutor;
-import nettypackets.iohandlers.PacketInboundEncoder;
+import nettypackets.iohandlers.PacketOutboundEncoder;
 import nettypackets.network.server.DefaultServer;
 import nettypackets.network.server.Server;
 import nettypackets.networkdata.DefaultNetworkData;
 import nettypackets.networkdata.NetworkData;
-import nettypackets.packet.Packet;
 import nettypackets.packetdecoderencoder.PacketEncoderDecoder;
 import nettypackets.packetdecoderencoder.ServerPacketDecoder;
 import nettypackets.packetregistry.PacketRegistry;
 import nettypackets.packetregistrycontainer.MultiPacketRegistryContainer;
 import nettypackets.packetregistrycontainer.PacketRegistryContainer;
 import nettypackets.packetregistrycontainer.SinglePacketRegistryContainer;
-
-import java.util.List;
 
 public class ServerFactory {
 
@@ -126,8 +121,6 @@ public class ServerFactory {
             }else{
                 bootstrap = new ServerBootstrap();
             }
-
-            setBootstrapHandler();
         }
 
         public Server build(){
@@ -137,18 +130,6 @@ public class ServerFactory {
 
         private NetworkData getNetworkData(){
             return new DefaultNetworkData(packetEncoderDecoder, packetRegistryContainer);
-        }
-
-
-        private void setBootstrapHandler(){
-            bootstrap.childHandler(new ChannelInitializer<SocketChannel>() { // (4)
-                @Override
-                public void initChannel(SocketChannel ch) throws Exception {
-                    ch.pipeline().addLast(
-                            new ServerPacketDecoder(networkData, group),
-                            new PacketInboundEncoder(networkData));
-                }
-            });
         }
 
     }

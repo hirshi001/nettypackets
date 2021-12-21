@@ -1,23 +1,15 @@
 package nettypackets.network.clientfactory;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.socket.SocketChannel;
-import nettypackets.iohandlers.PacketInboundEncoder;
-import nettypackets.iohandlers.PacketOutboundDecoder;
 import nettypackets.network.client.Client;
 import nettypackets.network.client.DefaultClient;
 import nettypackets.networkdata.DefaultNetworkData;
 import nettypackets.networkdata.NetworkData;
 import nettypackets.packetdecoderencoder.PacketEncoderDecoder;
-import nettypackets.packetdecoderencoder.SimplePacketEncoderDecoder;
 import nettypackets.packetregistry.PacketRegistry;
 import nettypackets.packetregistrycontainer.MultiPacketRegistryContainer;
 import nettypackets.packetregistrycontainer.PacketRegistryContainer;
 import nettypackets.packetregistrycontainer.SinglePacketRegistryContainer;
-
-import java.util.function.Supplier;
 
 public class ClientFactory {
 
@@ -108,7 +100,6 @@ public class ClientFactory {
 
         Bootstrap bootstrap;
         NetworkData networkData;
-        Supplier<ChannelHandlerContext> channel;
 
 
         public ClientBuilder(){
@@ -120,12 +111,10 @@ public class ClientFactory {
             }else{
                 bootstrap = new Bootstrap();
             }
-
-            setBootstrapHandler();
         }
 
         public Client build(){
-            return new DefaultClient(ipAddress, port, networkData, channel);
+            return new DefaultClient(ipAddress, port, networkData);
         }
 
 
@@ -133,21 +122,6 @@ public class ClientFactory {
             return new DefaultNetworkData(packetEncoderDecoder, packetRegistryContainer);
         }
 
-
-        private void setBootstrapHandler(){
-
-            PacketOutboundDecoder outboundDecoder = new PacketOutboundDecoder(networkData);
-            channel = ()-> outboundDecoder.channel;
-
-            bootstrap.handler(new ChannelInitializer<SocketChannel>() {
-                @Override
-                public void initChannel(SocketChannel ch) throws Exception {
-                    ch.pipeline().addLast(
-                            outboundDecoder,
-                            new PacketInboundEncoder(networkData));
-                }
-            });
-        }
 
     }
 

@@ -8,6 +8,7 @@ import io.netty.channel.group.ChannelGroupFuture;
 import io.netty.util.concurrent.Future;
 import nettypackets.network.NetworkSide;
 import nettypackets.network.PacketResponseFuture;
+import nettypackets.network.listeners.ServerListener;
 import nettypackets.packet.Packet;
 
 public interface Server extends NetworkSide<ServerBootstrap> {
@@ -23,5 +24,7 @@ public interface Server extends NetworkSide<ServerBootstrap> {
     public Future<?> disconnect();
 
     public boolean isConnected();
+
+    public void addListener(ServerListener listener);
 
 }

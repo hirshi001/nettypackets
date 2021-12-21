@@ -10,15 +10,22 @@ public abstract class Packet {
 
     public PacketHandlerContext packetHandlerContext = new PacketHandlerContext();
     public NetworkData networkData;
+    public int clientId = -1, serverId = -1;
 
     public Packet(){}
 
-    public void writeBytes(ByteBuf out){ }
+    public void writeBytes(ByteBuf out){
+        out.writeInt(clientId);
+        out.writeInt(serverId);
+    }
 
-    public void readBytes(ByteBuf in){  }
+    public void readBytes(ByteBuf in){
+        clientId = in.readInt();
+        serverId = in.readInt();
+    }
 
     public final void handle(ChannelHandlerContext ctx){
-        packetHandlerContext.packetHandler.handle(this, ctx);
+        packetHandlerContext.packetHandler.handle(this);
     }
 
     public Packet setPacketRegistry(PacketRegistry registry){
@@ -32,6 +39,16 @@ public abstract class Packet {
 
     public NetworkData getNetworkData(){
         return networkData;
+    }
+
+    /**
+     * Sets the packet which this packet is responding to (if it is responding to any packet at all)
+     * @param packet
+     */
+    public Packet setResponsePacket(Packet packet){
+        this.clientId = packet.clientId;
+        this.serverId = packet.serverId;
+        return this;
     }
 
 }

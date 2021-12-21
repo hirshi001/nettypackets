@@ -36,12 +36,17 @@ public class TestPacket extends Packet {
         message = new String(msgBytes, StandardCharsets.UTF_8);
     }
 
-    public void serverHandle(ChannelHandlerContext packetHandlerContext){
-        System.out.println("[Client -> Server][" +packetHandlerContext.channel().id()+ "]:"+ message);
-        LibraryTest.server.sendPacketToAll(this);
+    public void serverHandle(){
+        System.out.println("[Client -> Server][" +packetHandlerContext.channelHandlerContext.channel().id()+ "]:"+ message);
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        LibraryTest.server.sendPacketToAll(this.setResponsePacket(this));
     }
 
-    public void clientHandle(ChannelHandlerContext packetHandlerContext){
-        System.out.println("[Server -> Client][" +packetHandlerContext.channel().id()+ "]:"+ message);
+    public void clientHandle(){
+        System.out.println("[Server -> Client][" +packetHandlerContext.channelHandlerContext.channel().id()+ "]:"+ message);
     }
 }

@@ -3,22 +3,25 @@ package nettypackets.iohandlers;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import nettypackets.network.NetworkSide;
 import nettypackets.networkdata.NetworkData;
 import nettypackets.networkdata.OutboundPacketStats;
 import nettypackets.packet.Packet;
 
 import java.util.List;
 
-public class PacketOutboundDecoder extends ByteToMessageDecoder {
+public class PacketInboundDecoder<N extends NetworkSide<?>, L extends PacketListener<N>> extends ByteToMessageDecoder {
 
-    public final NetworkData networkData;
+    public final N networkSide;
     public final OutboundPacketStats stats;
-    public ChannelHandlerContext channel;
+
+    private final PacketListenerHandler<N, L> packetListener;
 
 
-    public PacketOutboundDecoder(NetworkData networkData){
-        this.networkData = networkData;
-        stats =  new OutboundPacketStats();
+    public PacketInboundDecoder(N networkSide){
+        this.networkSide = networkSide;
+        stats = new OutboundPacketStats();
+        packetListener = new PacketListenerHandler<>();
     }
 
     @Override
@@ -26,33 +29,27 @@ public class PacketOutboundDecoder extends ByteToMessageDecoder {
         Packet packet;
         int readerIndex = in.readerIndex();
         while ((packet = getPacket(in, ctx)) != null) {
+            packet.getPacketHandlerContext().channelHandlerContext = ctx;
             packet.handle(ctx);
+            packetListener.packetReceived(packet, ctx, networkSide);
             stats.addPacket(in.readerIndex() - readerIndex);
             readerIndex = in.readerIndex();
         }
     }
 
-    @Override
-    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-        super.channelRegistered(ctx);
-        this.channel = ctx;
-
-    }
-
-    @Override
-    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
-        super.channelUnregistered(ctx);
-        this.channel = null;
-    }
 
     protected Packet getPacket(ByteBuf in, ChannelHandlerContext ctx){
         try {
-            return networkData.decode(in);
+            return networkSide.getNetworkData().decode(in);
         }catch(Exception e){
             ctx.close();
             e.printStackTrace();
             return null;
         }
+    }
+
+    public void addListener(L listener){
+        packetListener.addListener(listener);
     }
 
 }

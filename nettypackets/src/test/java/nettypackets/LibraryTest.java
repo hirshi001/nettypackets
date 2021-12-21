@@ -5,6 +5,7 @@ package nettypackets;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -13,7 +14,11 @@ import logger.ConsoleColors;
 import logger.DateStringFunction;
 import logger.Logger;
 import nettypackets.network.clientfactory.ClientFactory;
+import nettypackets.network.listeners.AbstractServerListener;
+import nettypackets.network.listeners.ServerListener;
+import nettypackets.network.server.Server;
 import nettypackets.network.serverfactory.ServerFactory;
+import nettypackets.packet.Packet;
 import nettypackets.packet.PacketHolder;
 import nettypackets.packetdecoderencoder.PacketEncoderDecoder;
 import nettypackets.packetdecoderencoder.SimplePacketEncoderDecoder;
@@ -73,12 +78,41 @@ public class LibraryTest {
                 );
 
         server = serverFactory.connectServerNowUninterruptibly();
+        server.addListener(new AbstractServerListener(){
+                               @Override
+                               public void clientConnected(Server server, ChannelHandlerContext context) {
+                                    server.sendPacketWithResponse(new TestPacket2("Hi from server").setPacketRegistry(serverRegistry), context.channel(), 1000).
+                                            addListener(future -> {
+                                                if(future.isSuccess()){
+                                                    if(future.getNow() instanceof TestPacket2){
+                                                        TestPacket2 packet = (TestPacket2) future.getNow();
+                                                        System.out.println("Server received: " + packet.message);
+                                                    }
+                                                }
+                                            });
+                               }
+                           });
+
 
         client = clientFactory.connectAsync().await().getNow();
 
+
         client.sendPacket(new TestPacket("test").setPacketRegistry(clientRegistry));
+        client.sendPacketWithResponse(new TestPacket("response test").setPacketRegistry(clientRegistry), 1000).addListener(future -> {
+            if (future.isSuccess()) {
+                Packet packet = (Packet) future.get();
+                if (packet instanceof TestPacket) {
+                    System.out.println("client received response from: " + ((TestPacket) packet).message);
+                }
+            }
+            else{
+                future.cause().printStackTrace();
+            }
+        });
 
         Thread.sleep(1000);
+
+
 
     }
 
