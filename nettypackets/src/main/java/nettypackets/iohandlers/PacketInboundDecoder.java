@@ -1,6 +1,7 @@
 package nettypackets.iohandlers;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import nettypackets.network.NetworkSide;
@@ -10,6 +11,7 @@ import nettypackets.packet.Packet;
 
 import java.util.List;
 
+@ChannelHandler.Sharable
 public class PacketInboundDecoder<N extends NetworkSide<?>, L extends PacketListener<N>> extends ByteToMessageDecoder {
 
     public final N networkSide;

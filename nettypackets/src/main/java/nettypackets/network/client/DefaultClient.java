@@ -90,30 +90,30 @@ public class DefaultClient implements Client{
     @Override
     public ChannelFuture connect(Bootstrap bootstrap) {
 
-        PacketOutboundEncoder<Client, ClientListener> packetOutboundEncoder = new PacketOutboundEncoder<>(this);
-        PacketInboundDecoder<Client, ClientListener> packetInboundDecoder = new PacketInboundDecoder<Client, ClientListener>(this){
-            @Override
-            public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-                super.channelRegistered(ctx);
-                DefaultClient.this.channel = ctx;
-            }
-        };
-
-        packetInboundDecoder.addListener(listenerHandler);
-        packetInboundDecoder.addListener(new AbstractClientListener() {
-            @Override
-            public void packetReceived(Packet packet, ChannelHandlerContext context, Client side) {
-                if(packetResponses.containsKey(packet.clientId)){
-                    packetResponses.remove(packet.clientId).setSuccess(packet);
-                }
-            }
-        });
-
-        packetOutboundEncoder.addListener(listenerHandler);
-
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(SocketChannel ch) throws Exception {
+                PacketOutboundEncoder<Client, ClientListener> packetOutboundEncoder = new PacketOutboundEncoder<>(DefaultClient.this);
+                PacketInboundDecoder<Client, ClientListener> packetInboundDecoder = new PacketInboundDecoder<Client, ClientListener>(DefaultClient.this){
+                    @Override
+                    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+                        super.channelRegistered(ctx);
+                        DefaultClient.this.channel = ctx;
+                    }
+                };
+
+                packetInboundDecoder.addListener(listenerHandler);
+                packetInboundDecoder.addListener(new AbstractClientListener() {
+                    @Override
+                    public void packetReceived(Packet packet, ChannelHandlerContext context, Client side) {
+                        if(packetResponses.containsKey(packet.clientId)){
+                            packetResponses.remove(packet.clientId).setSuccess(packet);
+                        }
+                    }
+                });
+
+                packetOutboundEncoder.addListener(listenerHandler);
+
                 ch.pipeline().addLast(packetOutboundEncoder, packetInboundDecoder);
             }
         });

@@ -1,12 +1,14 @@
 package nettypackets.iohandlers;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import nettypackets.network.NetworkSide;
 import nettypackets.networkdata.NetworkData;
 import nettypackets.packet.Packet;
 
+@ChannelHandler.Sharable
 public class PacketOutboundEncoder<N extends NetworkSide<?>, L extends PacketListener<N>> extends MessageToByteEncoder<Packet> {
 
     private final N networkSide;

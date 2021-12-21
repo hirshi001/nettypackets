@@ -91,38 +91,40 @@ public class DefaultServer implements Server{
     public ChannelFuture connect(ServerBootstrap bootstrap) {
 
         //ServerPacketDecoder decoder = new ServerPacketDecoder(this, );
-        PacketOutboundEncoder<Server, ServerListener> packetOutboundEncoder = new PacketOutboundEncoder<>(this);
-        PacketInboundDecoder<Server, ServerListener> packetInboundDecoder = new PacketInboundDecoder<Server, ServerListener>(this){
-            @Override
-            public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-                super.channelRegistered(ctx);
-                DefaultServer.this.channels.add(ctx.channel());
-                listenerHandler.clientConnected(DefaultServer.this, ctx);
-            }
-
-            @Override
-            public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
-                super.channelUnregistered(ctx);
-                DefaultServer.this.channels.remove(ctx.channel());
-                listenerHandler.clientDisconnected(DefaultServer.this, ctx);
-            }
-        };
-
-        packetInboundDecoder.addListener(listenerHandler); //only to listen to when packets are sent/received
-        packetInboundDecoder.addListener(new AbstractServerListener() {
-            @Override
-            public void packetReceived(Packet packet, ChannelHandlerContext context, Server side) {
-                if(packetResponses.containsKey(packet.clientId)){
-                    packetResponses.remove(packet.clientId).setSuccess(packet);
-                }
-            }
-        }); //when packet received, handle the response
-
-        packetOutboundEncoder.addListener(listenerHandler); //only to listen to when packets are sent/received
-
         bootstrap.childHandler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(SocketChannel ch) throws Exception {
+
+
+                PacketOutboundEncoder<Server, ServerListener> packetOutboundEncoder = new PacketOutboundEncoder<>(DefaultServer.this);
+                PacketInboundDecoder<Server, ServerListener> packetInboundDecoder = new PacketInboundDecoder<Server, ServerListener>(DefaultServer.this){
+                    @Override
+                    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+                        super.channelRegistered(ctx);
+                        DefaultServer.this.channels.add(ctx.channel());
+                        listenerHandler.clientConnected(DefaultServer.this, ctx);
+                    }
+
+                    @Override
+                    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
+                        super.channelUnregistered(ctx);
+                        DefaultServer.this.channels.remove(ctx.channel());
+                        listenerHandler.clientDisconnected(DefaultServer.this, ctx);
+                    }
+                };
+
+                packetInboundDecoder.addListener(listenerHandler); //only to listen to when packets are sent/received
+                packetInboundDecoder.addListener(new AbstractServerListener() {
+                    @Override
+                    public void packetReceived(Packet packet, ChannelHandlerContext context, Server side) {
+                        if(packetResponses.containsKey(packet.clientId)){
+                            packetResponses.remove(packet.clientId).setSuccess(packet);
+                        }
+                    }
+                }); //when packet received, handle the response
+
+                packetOutboundEncoder.addListener(listenerHandler); //only to listen to when packets are sent/received
+
                 ch.pipeline().addLast(packetOutboundEncoder, packetInboundDecoder);
             }
         });
