@@ -11,7 +11,6 @@ import nettypackets.packet.Packet;
 
 import java.util.List;
 
-@ChannelHandler.Sharable
 public class PacketInboundDecoder<N extends NetworkSide<?>, L extends PacketListener<N>> extends ByteToMessageDecoder {
 
     public final N networkSide;

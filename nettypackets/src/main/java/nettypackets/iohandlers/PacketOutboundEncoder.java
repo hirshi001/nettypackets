@@ -8,7 +8,6 @@ import nettypackets.network.NetworkSide;
 import nettypackets.networkdata.NetworkData;
 import nettypackets.packet.Packet;
 
-@ChannelHandler.Sharable
 public class PacketOutboundEncoder<N extends NetworkSide<?>, L extends PacketListener<N>> extends MessageToByteEncoder<Packet> {
 
     private final N networkSide;
