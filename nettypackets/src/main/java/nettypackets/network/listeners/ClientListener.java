@@ -8,8 +8,7 @@ public interface ClientListener extends PacketListener<Client> {
 
     void disconnected(Client client);
 
-
-    //void connected(Client client);
+    void connected(Client client);
 
     //void exception(Client client, Exception exception);
 

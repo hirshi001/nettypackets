@@ -15,4 +15,10 @@ public interface PacketRegistry {
 
     public String getRegistryName();
 
+    PacketRegistry registerDefaultPrimitivePackets();
+
+    PacketRegistry registerDefaultArrayPrimitivePackets();
+
+    PacketRegistry registerDefaultObjectPackets();
+
 }

@@ -20,4 +20,9 @@ public class AbstractClientListener implements ClientListener{
     public void disconnected(Client client) {
 
     }
+
+    @Override
+    public void connected(Client client) {
+
+    }
 }

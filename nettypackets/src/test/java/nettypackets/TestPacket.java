@@ -6,8 +6,14 @@ import nettypackets.packet.Packet;
 import nettypackets.packetregistry.PacketRegistry;
 
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class TestPacket extends Packet {
+
+    static AtomicInteger testPacketClientHandleCounter = new AtomicInteger(0);
+    static AtomicInteger testPacketServerHandleCounter = new AtomicInteger(0);
+
+
 
     public String message;
 
@@ -37,7 +43,7 @@ public class TestPacket extends Packet {
     }
 
     public void serverHandle(){
-        System.out.println("[Client -> Server][" +packetHandlerContext.channelHandlerContext.channel().id()+ "]:"+ message);
+        testPacketServerHandleCounter.incrementAndGet();
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {
@@ -47,6 +53,6 @@ public class TestPacket extends Packet {
     }
 
     public void clientHandle(){
-        System.out.println("[Server -> Client][" +packetHandlerContext.channelHandlerContext.channel().id()+ "]:"+ message);
+        testPacketClientHandleCounter.incrementAndGet();
     }
 }

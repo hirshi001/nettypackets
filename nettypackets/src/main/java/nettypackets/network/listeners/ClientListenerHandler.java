@@ -20,4 +20,8 @@ public class ClientListenerHandler extends PacketListenerHandler<Client, ClientL
         getPacketListeners().forEach(listener -> listener.disconnected(client));
     }
 
+    @Override
+    public void connected(Client client) {
+        getPacketListeners().forEach(listener -> listener.connected(client));
+    }
 }

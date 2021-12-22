@@ -3,6 +3,7 @@ package nettypackets.network.clientfactory;
 import io.netty.bootstrap.Bootstrap;
 import nettypackets.network.client.Client;
 import nettypackets.network.client.DefaultClient;
+import nettypackets.network.listeners.ClientListener;
 import nettypackets.networkdata.DefaultNetworkData;
 import nettypackets.networkdata.NetworkData;
 import nettypackets.packetdecoderencoder.PacketEncoderDecoder;
@@ -10,6 +11,9 @@ import nettypackets.packetregistry.PacketRegistry;
 import nettypackets.packetregistrycontainer.MultiPacketRegistryContainer;
 import nettypackets.packetregistrycontainer.PacketRegistryContainer;
 import nettypackets.packetregistrycontainer.SinglePacketRegistryContainer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ClientFactory {
 
@@ -19,6 +23,8 @@ public class ClientFactory {
     private Bootstrap bootstrap;
     private final PacketRegistryContainer packetRegistryContainer;
     private final boolean isMultiPacketRegistry;
+
+    private List<ClientListener> listenerList = new ArrayList<>();
 
 
     public static ClientFactory multiPacketRegistryClientFactory(){
@@ -83,6 +89,11 @@ public class ClientFactory {
         return packetRegistryContainer;
     }
 
+    public ClientFactory addListener(ClientListener listener){
+        listenerList.add(listener);
+        return this;
+    }
+
     public Client connectClientNow() throws InterruptedException {
         Client client = new ClientBuilder().build();
         client.connect(bootstrap).sync();
@@ -118,7 +129,9 @@ public class ClientFactory {
         }
 
         public Client build(){
-            return new DefaultClient(ipAddress, port, networkData);
+            Client client = new DefaultClient(ipAddress, port, networkData);
+            listenerList.forEach(client::addListener);
+            return client;
         }
 
 

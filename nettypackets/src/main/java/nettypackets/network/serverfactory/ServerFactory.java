@@ -7,6 +7,7 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.util.concurrent.DefaultEventExecutor;
 import nettypackets.iohandlers.PacketOutboundEncoder;
+import nettypackets.network.listeners.ServerListener;
 import nettypackets.network.server.DefaultServer;
 import nettypackets.network.server.Server;
 import nettypackets.networkdata.DefaultNetworkData;
@@ -18,6 +19,9 @@ import nettypackets.packetregistrycontainer.MultiPacketRegistryContainer;
 import nettypackets.packetregistrycontainer.PacketRegistryContainer;
 import nettypackets.packetregistrycontainer.SinglePacketRegistryContainer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ServerFactory {
 
     private int port = 8080;
@@ -25,6 +29,7 @@ public class ServerFactory {
     private ServerBootstrap bootstrap;
     private final PacketRegistryContainer packetRegistryContainer;
     private final boolean isMultiPacketRegistry;
+    private List<ServerListener> serverListenerList;
 
 
     public static ServerFactory multiPacketRegistryServerFactory(){
@@ -38,6 +43,7 @@ public class ServerFactory {
     private ServerFactory(PacketRegistryContainer packetRegistryContainer, boolean isMultiPacketRegistry){
         this.packetRegistryContainer = packetRegistryContainer;
         this.isMultiPacketRegistry = isMultiPacketRegistry;
+        serverListenerList = new ArrayList<>();
     }
 
     public int getPort() {
@@ -80,6 +86,9 @@ public class ServerFactory {
         return this;
     }
 
+    public void addListener(ServerListener serverListener){
+        serverListenerList.add(serverListener);
+    }
 
     public Server connectServerNow() throws InterruptedException {
         Server server = getServer();
@@ -124,7 +133,9 @@ public class ServerFactory {
         }
 
         public Server build(){
-            return new DefaultServer(port, networkData, group);
+            DefaultServer defaultServer = new DefaultServer(port, networkData, group);
+            serverListenerList.forEach(defaultServer::addListener);
+            return defaultServer;
         }
 
 

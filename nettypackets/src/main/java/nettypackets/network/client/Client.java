@@ -3,11 +3,10 @@ package nettypackets.network.client;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.Promise;
 import nettypackets.network.NetworkSide;
-import nettypackets.network.PacketResponseFuture;
 import nettypackets.network.listeners.ClientListener;
 import nettypackets.packet.Packet;
+import nettypackets.restapi.RestAction;
 
 public interface Client extends NetworkSide<Bootstrap> {
 
@@ -24,7 +23,7 @@ public interface Client extends NetworkSide<Bootstrap> {
      * @param timeout
      * @return the response future with the packet response from the server to this client
      */
-    public Promise<Packet> sendPacketWithResponse(Packet packet, long timeout);
+    public RestAction<Packet> sendPacketWithResponse(Packet packet, long timeout);
 
     public ChannelFuture connect(Bootstrap bootstrap);
 

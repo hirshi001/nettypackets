@@ -5,17 +5,18 @@ package nettypackets;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.concurrent.DefaultEventExecutor;
+import io.netty.util.concurrent.Future;
 import logger.ConsoleColors;
 import logger.DateStringFunction;
 import logger.Logger;
+import nettypackets.network.client.Client;
 import nettypackets.network.clientfactory.ClientFactory;
-import nettypackets.network.listeners.AbstractServerListener;
-import nettypackets.network.listeners.ServerListener;
+import nettypackets.network.listeners.AbstractClientListener;
 import nettypackets.network.server.Server;
 import nettypackets.network.serverfactory.ServerFactory;
 import nettypackets.packet.Packet;
@@ -24,7 +25,16 @@ import nettypackets.packetdecoderencoder.PacketEncoderDecoder;
 import nettypackets.packetdecoderencoder.SimplePacketEncoderDecoder;
 import nettypackets.packetregistry.DefaultPacketRegistry;
 import nettypackets.packetregistry.PacketRegistry;
+import nettypackets.restapi.DefaultRestAction;
+import nettypackets.restapi.RestAction;
+import org.junit.Before;
 import org.junit.Test;
+
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class LibraryTest {
 
@@ -34,21 +44,20 @@ public class LibraryTest {
 
     public static PacketRegistry clientRegistry;
 
-    public static nettypackets.network.server.Server server;
-    public static nettypackets.network.client.Client client;
+    public static Server server;
+    public static Client client;
 
     public static PacketEncoderDecoder encoderDecoder;
 
+    public static ClientFactory clientFactory;
+    public static ServerFactory serverFactory;
 
-    @Test
-    public void test() throws InterruptedException {
-
+    @Before
+    public void setUp() throws Exception {
         encoderDecoder = new SimplePacketEncoderDecoder();
         System.setOut(new Logger(System.out, System.err, new DateStringFunction(ConsoleColors.RED, "[","]")).debugShort(true).debug());
 
-
-
-        ServerFactory serverFactory = ServerFactory.multiPacketRegistryServerFactory().
+        serverFactory = ServerFactory.multiPacketRegistryServerFactory().
                 setPort(8080).
                 setPacketEncoderDecoder(encoderDecoder).
                 setBootstrap(new ServerBootstrap().
@@ -56,14 +65,21 @@ public class LibraryTest {
                         channel(NioServerSocketChannel.class).
                         option(ChannelOption.SO_BACKLOG, 128).
                         childOption(ChannelOption.SO_KEEPALIVE, true)).
-                addPacketRegistry(serverRegistry = new DefaultPacketRegistry(NAME).
-                        register(new PacketHolder<>(TestPacket::new, TestPacket::serverHandle, TestPacket.class), 0).
-                        register(new PacketHolder<>(TestPacket2::new, TestPacket2::serverHandle, TestPacket2.class), 1)
+                addPacketRegistry(serverRegistry = new DefaultPacketRegistry(NAME)
+                        .register(new PacketHolder<>(TestPacket::new, TestPacket::serverHandle, TestPacket.class), 0)
+                        .register(new PacketHolder<>(TestPacket2::new, TestPacket2::serverHandle, TestPacket2.class), 1)
+                        .registerDefaultArrayPrimitivePackets()
+                        .registerDefaultObjectPackets()
+                        .registerDefaultPrimitivePackets()
                 );
 
 
 
-        ClientFactory clientFactory = ClientFactory.multiPacketRegistryClientFactory().
+        clientFactory = newClientFactory();
+    }
+
+    private ClientFactory newClientFactory(){
+        return ClientFactory.multiPacketRegistryClientFactory().
                 setIpAddress("localhost").
                 setPort(8080).
                 setPacketEncoderDecoder(encoderDecoder).
@@ -72,48 +88,116 @@ public class LibraryTest {
                         channel(NioSocketChannel.class).
                         option(ChannelOption.SO_KEEPALIVE, true)
                 ).
-                addPacketRegistry(clientRegistry = new DefaultPacketRegistry(NAME).
-                        register(new PacketHolder<>(TestPacket::new, TestPacket::clientHandle, TestPacket.class), 0).
-                        register(new PacketHolder<>(TestPacket2::new, TestPacket2::clientHandle, TestPacket2.class), 1)
+                addPacketRegistry(clientRegistry = new DefaultPacketRegistry(NAME)
+                        .register(new PacketHolder<>(TestPacket::new, TestPacket::clientHandle, TestPacket.class), 0)
+                        .register(new PacketHolder<>(TestPacket2::new, TestPacket2::clientHandle, TestPacket2.class), 1)
+                        .registerDefaultArrayPrimitivePackets()
+                        .registerDefaultObjectPackets()
+                        .registerDefaultPrimitivePackets()
                 );
+    }
+
+    @Test
+    public void RestActionTest() throws InterruptedException {
+        RestAction<Packet> action = new DefaultRestAction<>((next, promise)->{
+            next.submitTask(new TestPacket("sup dawgs"));
+        }, new ScheduledThreadPoolExecutor(1), new DefaultEventExecutor());
+
+        Future<String> futureAction = action
+                .then(packet -> System.out.println("Packet received: " + packet))
+                .map(packet -> ((TestPacket) packet).message).pauseFor(1000)
+                .getRestFuture().addListener(future -> {
+                    if(future.isSuccess()){
+                        System.out.println("RestActionTest: " + future.getNow());
+                    }
+                }).perform();
+
+        Thread.sleep(2000);
+
+        assert futureAction.isSuccess();
+    }
+
+
+    @Test
+    public void test() throws InterruptedException {
+
+        AtomicBoolean flag1 = new AtomicBoolean(false); //client2 connected listener called
+        AtomicBoolean flag2 = new AtomicBoolean(false); //client first then called
+        AtomicBoolean flag3 = new AtomicBoolean(false); //client pauseFor approximatly 1 second passed
+        AtomicBoolean flag4 = new AtomicBoolean(false); //client second then called
+        AtomicBoolean flag5 = new AtomicBoolean(false); //client map called
+        AtomicBoolean flag6 = new AtomicBoolean(false); //client then, is a string
+        AtomicBoolean flag7 = new AtomicBoolean(false); //future listener called
+        AtomicBoolean flag8 = new AtomicBoolean(false); //future is success
+
+        AtomicBoolean flag9 = new AtomicBoolean(false); //message sent by client and received by server is same
+
+
 
         server = serverFactory.connectServerNowUninterruptibly();
-        server.addListener(new AbstractServerListener(){
-                               @Override
-                               public void clientConnected(Server server, ChannelHandlerContext context) {
-                                    server.sendPacketWithResponse(new TestPacket2("Hi from server").setPacketRegistry(serverRegistry), context.channel(), 1000).
-                                            addListener(future -> {
-                                                if(future.isSuccess()){
-                                                    if(future.getNow() instanceof TestPacket2){
-                                                        TestPacket2 packet = (TestPacket2) future.getNow();
-                                                        System.out.println("Server received: " + packet.message);
-                                                    }
-                                                }
-                                            });
-                               }
-                           });
-
-
-        client = clientFactory.connectAsync().await().getNow();
-
-
-        client.sendPacket(new TestPacket("test").setPacketRegistry(clientRegistry));
-        client.sendPacketWithResponse(new TestPacket("response test").setPacketRegistry(clientRegistry), 1000).addListener(future -> {
-            if (future.isSuccess()) {
-                Packet packet = (Packet) future.get();
-                if (packet instanceof TestPacket) {
-                    System.out.println("client received response from: " + ((TestPacket) packet).message);
-                }
+        client = clientFactory.connectClientNowUninterruptibly();
+        Client client2 = newClientFactory().addListener(new AbstractClientListener(){
+            @Override
+            public void connected(Client client) {
+                flag1.set(true);
             }
-            else{
-                future.cause().printStackTrace();
-            }
-        });
-
-        Thread.sleep(1000);
+        }).connectClientNowUninterruptibly();
 
 
+        AtomicLong start = new AtomicLong();
+        AtomicLong time = new AtomicLong();
 
+        String message = "message test";
+        Future<String> futureResponse = client.sendPacketWithResponse(new TestPacket(message).setPacketRegistry(clientRegistry), 1000).
+                then(packet -> {
+                    if(packet instanceof TestPacket){
+                        flag2.set(true);
+                        flag9.set(((TestPacket) packet).message.equals(message));
+                    }
+                    start.set(System.currentTimeMillis());
+                }).
+                pauseFor(1, TimeUnit.SECONDS).
+                then(packet -> {
+                    time.set(System.currentTimeMillis() - start.get());
+                    if(900 < time.get() && time.get() < 1100){
+                        flag3.set(true);
+                    }
+                    if(packet instanceof TestPacket){
+                        flag4.set(true);
+                    }
+                }).
+                map(packet -> {
+                    flag5.set(true);
+                    return ((TestPacket) packet).message.toUpperCase();
+                }).
+                then((string)->{
+                    if(string instanceof String && string != null){
+                        flag6.set(true);
+                    }
+                }).
+                getRestFuture().
+                addListener(future -> {
+                    flag7.set(true);
+                    if(future.isSuccess()) {
+                        flag8.set(true);
+                    }
+                }).
+                perform();
+
+        Thread.sleep(5000); //wait for everything to finish
+
+        assert futureResponse.isDone() && futureResponse.isSuccess();
+        assert TestPacket.testPacketServerHandleCounter.get()==1;
+        assert TestPacket.testPacketClientHandleCounter.get()==2; //client and client2
+        assert flag1.get();
+        assert flag2.get();
+        assert flag3.get();
+        assert flag4.get();
+        assert flag5.get();
+        assert flag6.get();
+        assert flag7.get();
+        assert flag8.get();
+        assert flag9.get();
     }
 
 }

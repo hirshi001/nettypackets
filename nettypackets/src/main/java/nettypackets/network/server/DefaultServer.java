@@ -6,21 +6,19 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.ChannelGroupFuture;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.util.concurrent.DefaultEventExecutor;
-import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Future;
 import nettypackets.iohandlers.PacketInboundDecoder;
 import nettypackets.iohandlers.PacketOutboundEncoder;
-import nettypackets.network.PacketResponseFuture;
+import nettypackets.network.PacketResponseManager;
 import nettypackets.network.listeners.AbstractServerListener;
 import nettypackets.network.listeners.ServerListener;
 import nettypackets.network.listeners.ServerListenerHandler;
 import nettypackets.networkdata.NetworkData;
 import nettypackets.packet.Packet;
-import nettypackets.packetdecoderencoder.ServerPacketDecoder;
+import nettypackets.restapi.RestAction;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class DefaultServer implements Server{
 
@@ -31,21 +29,16 @@ public class DefaultServer implements Server{
     EventLoopGroup worker, boss;
     private boolean connected;
 
-    private final AtomicInteger packetResponseId;
-    private final Map<Integer, PacketResponseFuture> packetResponses;
+    private final PacketResponseManager packetResponseManager;
 
     private final ServerListenerHandler listenerHandler;
-    private EventExecutor executor;
-
 
     public DefaultServer(int port, NetworkData networkData, ChannelGroup channels) {
         this.port = port;
         this.networkData = networkData;
         this.channels = channels;
-        packetResponseId = new AtomicInteger(0);
-        packetResponses = new ConcurrentHashMap<>();
+        packetResponseManager = new PacketResponseManager(new DefaultEventExecutor(), new ScheduledThreadPoolExecutor(1));
         listenerHandler = new ServerListenerHandler();
-        executor = new DefaultEventExecutor();
     }
 
     @Override
@@ -65,26 +58,19 @@ public class DefaultServer implements Server{
 
     @Override
     public ChannelGroupFuture sendPacketToAll(Packet packet) {
-        packet.serverId = -1;
+        packetResponseManager.noId(packet);
         return channels.writeAndFlush(packet);
     }
 
     @Override
     public ChannelFuture sendPacket(Packet packet, Channel channel) {
-        packet.serverId = -1;
+        packetResponseManager.noId(packet);
         return channel.writeAndFlush(packet);
     }
 
     @Override
-    public PacketResponseFuture sendPacketWithResponse(Packet packet, Channel channel, long timeout) {
-        int id = getNextPacketResponseId();
-
-        PacketResponseFuture responseFuture = new PacketResponseFuture(id, executor);
-        packet.clientId = id;
-        packetResponses.put(id, responseFuture);
-        channel.writeAndFlush(packet);
-
-        return responseFuture;
+    public RestAction<Packet> sendPacketWithResponse(Packet packet, Channel channel, long timeout) {
+        return packetResponseManager.submit(packet, channel, timeout, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -117,9 +103,7 @@ public class DefaultServer implements Server{
                 packetInboundDecoder.addListener(new AbstractServerListener() {
                     @Override
                     public void packetReceived(Packet packet, ChannelHandlerContext context, Server side) {
-                        if(packetResponses.containsKey(packet.clientId)){
-                            packetResponses.remove(packet.clientId).setSuccess(packet);
-                        }
+                        packetResponseManager.success(packet);
                     }
                 }); //when packet received, handle the response
 
@@ -158,7 +142,4 @@ public class DefaultServer implements Server{
         listenerHandler.addListener(listener);
     }
 
-    private int getNextPacketResponseId(){
-        return packetResponseId.getAndIncrement();
-    }
 }
