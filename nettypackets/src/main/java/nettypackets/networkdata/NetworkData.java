@@ -18,6 +18,7 @@ public interface NetworkData {
     }
 
     default void encode(Packet packet, ByteBuf out){
+        if(!getPacketRegistryContainer().supportsMultipleRegistries()) packet.setPacketRegistry(getPacketRegistryContainer().getDefaultRegistry());
         getPacketEncoderDecoder().encode(packet, out);
     }
 
