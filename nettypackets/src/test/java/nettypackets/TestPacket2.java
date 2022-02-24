@@ -44,6 +44,6 @@ public class TestPacket2 extends Packet {
 
     public void clientHandle(){
         System.out.println("[Server -> Client]: " + message);
-        LibraryTest.client.sendPacket(new TestPacket2("Test packet 2: client responding to server").setResponsePacket(this).setPacketRegistry(LibraryTest.clientRegistry));
+        //LibraryTest.client.sendPacket(new TestPacket2("Test packet 2: client responding to server").setResponsePacket(this).setPacketRegistry(LibraryTest.clientRegistry));
     }
 }

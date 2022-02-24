@@ -26,4 +26,11 @@ public class IntegerPacket extends Packet {
         super.readBytes(in);
         value = in.readInt();
     }
+
+    @Override
+    public String toString() {
+        return "IntegerPacket{" +
+                "value=" + value +
+                '}';
+    }
 }

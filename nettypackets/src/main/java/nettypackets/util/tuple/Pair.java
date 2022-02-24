@@ -1,7 +1,4 @@
-package nettypackets.util;
-
-import io.netty.bootstrap.Bootstrap;
-import io.netty.bootstrap.ServerBootstrap;
+package nettypackets.util.tuple;
 
 public class Pair<A, B>{
 

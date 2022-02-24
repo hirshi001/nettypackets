@@ -26,4 +26,11 @@ public class FloatPacket extends Packet {
         super.readBytes(in);
         value = in.readFloat();
     }
+
+    @Override
+    public String toString() {
+        return "FloatPacket{" +
+                "value=" + value +
+                '}';
+    }
 }

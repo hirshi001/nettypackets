@@ -1,12 +1,14 @@
 package nettypackets.packetdecoderencoder;
 
 import io.netty.buffer.ByteBuf;
+import nettypackets.network.packethandlercontext.PacketHandlerContext;
 import nettypackets.packet.Packet;
-import nettypackets.packet.PacketHandler;
 import nettypackets.packet.PacketHolder;
 import nettypackets.packetregistry.PacketRegistry;
 import nettypackets.packetregistrycontainer.PacketRegistryContainer;
 import nettypackets.util.ByteBufUtil;
+
+import javax.annotation.Nullable;
 
 public class SimplePacketEncoderDecoder implements PacketEncoderDecoder {
 
@@ -22,7 +24,7 @@ public class SimplePacketEncoderDecoder implements PacketEncoderDecoder {
     }
 
     @Override
-    public Packet decode(PacketRegistryContainer container, ByteBuf in) {
+    public PacketHandlerContext<?> decode(PacketRegistryContainer container, ByteBuf in, @Nullable PacketHandlerContext context) {
         if(in.readableBytes()<8) return null; // If there is not enough bytes to read the length and the id
 
 
@@ -39,26 +41,27 @@ public class SimplePacketEncoderDecoder implements PacketEncoderDecoder {
         PacketRegistry registry = container.get(registryName);
         if(registry==null) throw new NullPointerException("The registry name " + registryName + " does not exist in the SidedPacketRegistryContainer " + container);
 
-        PacketHolder<? extends Packet> holder = registry.getPacketHolder(id);
+        PacketHolder holder = registry.getPacketHolder(id);
 
         Packet packet = holder.getPacket();
         packet.readBytes(msg);
+        msg.release();
 
-        packet.packetHandlerContext.packetHandler = (PacketHandler<Packet>) holder.handler; //should work
-        packet.packetHandlerContext.packetRegistry = registry;
+        if(context==null) context = new PacketHandlerContext<>();
+        context.packetHandler = holder.handler;
+        context.packetRegistry = registry;
+        context.packet = packet;
 
-
-        return packet;
+        return context;
     }
 
     @Override
-    public void encode(Packet packet, ByteBuf out) {
-        PacketRegistry registry = packet.packetHandlerContext.packetRegistry;
+    public void encode(Packet packet, PacketRegistryContainer container, PacketRegistry packetRegistry, ByteBuf out) {
 
         int startIndex = out.writerIndex(); // start index
         out.writerIndex(startIndex+8); // Reserve space for the length and the id
 
-        ByteBufUtil.writeStringToBuf(registry.getRegistryName(), out); // Write the registry name
+        ByteBufUtil.writeStringToBuf(packetRegistry.getRegistryName(), out); // Write the registry name
         packet.writeBytes(out); // Write the packet
 
         int lastIdx = out.writerIndex(); // Get the last index
@@ -67,7 +70,7 @@ public class SimplePacketEncoderDecoder implements PacketEncoderDecoder {
         out.writerIndex(startIndex); // Set the writer index back to the start index
 
         out.writeInt(size); // Write the size of the packet
-        out.writeInt(registry.getId(packet.getClass())); // Write the id of the packet
+        out.writeInt(packetRegistry.getId(packet.getClass())); // Write the id of the packet
 
         out.writerIndex(lastIdx); // Set the writer index back to the last index
     }

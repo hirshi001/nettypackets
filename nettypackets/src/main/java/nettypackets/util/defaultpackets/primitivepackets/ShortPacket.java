@@ -26,4 +26,11 @@ public class ShortPacket extends Packet {
         super.readBytes(in);
         value = in.readShort();
     }
+
+    @Override
+    public String toString() {
+        return "ShortPacket{" +
+                "value=" + value +
+                '}';
+    }
 }

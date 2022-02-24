@@ -26,4 +26,11 @@ public class CharPacket extends Packet {
         super.readBytes(in);
         value = in.readChar();
     }
+
+    @Override
+    public String toString() {
+        return "CharPacket{" +
+                "value=" + value +
+                '}';
+    }
 }

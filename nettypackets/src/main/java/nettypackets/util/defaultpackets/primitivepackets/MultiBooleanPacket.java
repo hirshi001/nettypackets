@@ -8,96 +8,102 @@ import nettypackets.util.BooleanCompression;
  */
 public class MultiBooleanPacket extends BytePacket {
 
-    public MultiBooleanPacket(byte data) {
-        super(data);
+    public MultiBooleanPacket(byte value) {
+        super(value);
     }
 
-    public MultiBooleanPacket(boolean... data) {
-        this.data = BooleanCompression.compressBooleans(data);
+    public MultiBooleanPacket(boolean... value) {
+        this.value = BooleanCompression.compressBooleans(value);
     }
 
     //Create 8 constructors, one for each bit in the byte.
     public MultiBooleanPacket(boolean bit0) {
-        this.data = BooleanCompression.compressBooleans(bit0);
+        this.value = BooleanCompression.compressBooleans(bit0);
     }
     public MultiBooleanPacket(boolean bit0, boolean bit1) {
-        this.data = BooleanCompression.compressBooleans(bit0, bit1);
+        this.value = BooleanCompression.compressBooleans(bit0, bit1);
     }
     public MultiBooleanPacket(boolean bit0, boolean bit1, boolean bit2) {
-        this.data = BooleanCompression.compressBooleans(bit0, bit1, bit2);
+        this.value = BooleanCompression.compressBooleans(bit0, bit1, bit2);
     }
     public MultiBooleanPacket(boolean bit0, boolean bit1, boolean bit2, boolean bit3) {
-        this.data = BooleanCompression.compressBooleans(bit0, bit1, bit2, bit3);
+        this.value = BooleanCompression.compressBooleans(bit0, bit1, bit2, bit3);
     }
     public MultiBooleanPacket(boolean bit0, boolean bit1, boolean bit2, boolean bit3, boolean bit4) {
-        this.data = BooleanCompression.compressBooleans(bit0, bit1, bit2, bit3, bit4);
+        this.value = BooleanCompression.compressBooleans(bit0, bit1, bit2, bit3, bit4);
     }
     public MultiBooleanPacket(boolean bit0, boolean bit1, boolean bit2, boolean bit3, boolean bit4, boolean bit5) {
-        this.data = BooleanCompression.compressBooleans(bit0, bit1, bit2, bit3, bit4, bit5);
+        this.value = BooleanCompression.compressBooleans(bit0, bit1, bit2, bit3, bit4, bit5);
     }
     public MultiBooleanPacket(boolean bit0, boolean bit1, boolean bit2, boolean bit3, boolean bit4, boolean bit5, boolean bit6) {
-        this.data = BooleanCompression.compressBooleans(bit0, bit1, bit2, bit3, bit4, bit5, bit6);
+        this.value = BooleanCompression.compressBooleans(bit0, bit1, bit2, bit3, bit4, bit5, bit6);
     }
     public MultiBooleanPacket(boolean bit0, boolean bit1, boolean bit2, boolean bit3, boolean bit4, boolean bit5, boolean bit6, boolean bit7) {
-        this.data = BooleanCompression.compressBooleans(bit0, bit1, bit2, bit3, bit4, bit5, bit6, bit7);
+        this.value = BooleanCompression.compressBooleans(bit0, bit1, bit2, bit3, bit4, bit5, bit6, bit7);
     }
 
     //getters
     public boolean getBit0() {
-        return BooleanCompression.getBoolean(data, 0);
+        return BooleanCompression.getBoolean(value, 0);
     }
     public boolean getBit1() {
-        return BooleanCompression.getBoolean(data, 1);
+        return BooleanCompression.getBoolean(value, 1);
     }
     public boolean getBit2() {
-        return BooleanCompression.getBoolean(data, 2);
+        return BooleanCompression.getBoolean(value, 2);
     }
     public boolean getBit3() {
-        return BooleanCompression.getBoolean(data, 3);
+        return BooleanCompression.getBoolean(value, 3);
     }
     public boolean getBit4() {
-        return BooleanCompression.getBoolean(data, 4);
+        return BooleanCompression.getBoolean(value, 4);
     }
     public boolean getBit5() {
-        return BooleanCompression.getBoolean(data, 5);
+        return BooleanCompression.getBoolean(value, 5);
     }
     public boolean getBit6() {
-        return BooleanCompression.getBoolean(data, 6);
+        return BooleanCompression.getBoolean(value, 6);
     }
     public boolean getBit7() {
-        return BooleanCompression.getBoolean(data, 7);
+        return BooleanCompression.getBoolean(value, 7);
     }
     public boolean getNthBit(int n) {
-        return BooleanCompression.getBoolean(data, n);
+        return BooleanCompression.getBoolean(value, n);
     }
 
     //setters
     public void setBit0(boolean bit0) {
-        data = BooleanCompression.setBoolean(data, 0, bit0);
+        value = BooleanCompression.setBoolean(value, 0, bit0);
     }
     public void setBit1(boolean bit1) {
-        data = BooleanCompression.setBoolean(data, 1, bit1);
+        value = BooleanCompression.setBoolean(value, 1, bit1);
     }
     public void setBit2(boolean bit2) {
-        data = BooleanCompression.setBoolean(data, 2, bit2);
+        value = BooleanCompression.setBoolean(value, 2, bit2);
     }
     public void setBit3(boolean bit3) {
-        data = BooleanCompression.setBoolean(data, 3, bit3);
+        value = BooleanCompression.setBoolean(value, 3, bit3);
     }
     public void setBit4(boolean bit4) {
-        data = BooleanCompression.setBoolean(data, 4, bit4);
+        value = BooleanCompression.setBoolean(value, 4, bit4);
     }
     public void setBit5(boolean bit5) {
-        data = BooleanCompression.setBoolean(data, 5, bit5);
+        value = BooleanCompression.setBoolean(value, 5, bit5);
     }
     public void setBit6(boolean bit6) {
-        data = BooleanCompression.setBoolean(data, 6, bit6);
+        value = BooleanCompression.setBoolean(value, 6, bit6);
     }
     public void setBit7(boolean bit7) {
-        data = BooleanCompression.setBoolean(data, 7, bit7);
+        value = BooleanCompression.setBoolean(value, 7, bit7);
     }
     public void setNthBit(int n, boolean bit) {
-        data = BooleanCompression.setBoolean(data, n, bit);
+        value = BooleanCompression.setBoolean(value, n, bit);
     }
 
+    @Override
+    public String toString() {
+        return "MultiBooleanPacket{" +
+                "value=" + Integer.toBinaryString(value) +
+                '}';
+    }
 }

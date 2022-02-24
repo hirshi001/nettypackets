@@ -1,36 +1,28 @@
 package nettypackets.iohandlers;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import nettypackets.network.NetworkSide;
-import nettypackets.networkdata.NetworkData;
 import nettypackets.packet.Packet;
+import nettypackets.packetregistry.PacketRegistry;
+import nettypackets.util.tuple.Pair;
 
-public class PacketOutboundEncoder<N extends NetworkSide<?>, L extends PacketListener<N>> extends MessageToByteEncoder<Packet> {
+public class PacketOutboundEncoder extends MessageToByteEncoder<Pair<Packet, PacketRegistry>> {
 
-    private final N networkSide;
-    private final PacketListenerHandler<N,L> packetListener;
+    private final NetworkSide networkSide;
 
-    public PacketOutboundEncoder(N networkSide){
+    public PacketOutboundEncoder(NetworkSide networkSide){
         this.networkSide = networkSide;
-        packetListener = new PacketListenerHandler<N, L>();
-
     }
 
     @Override
-    protected void encode(ChannelHandlerContext ctx, Packet msg, ByteBuf out) throws Exception {
+    protected void encode(ChannelHandlerContext ctx, Pair<Packet, PacketRegistry> msg, ByteBuf out) throws Exception {
         try {
-            msg.getPacketHandlerContext().channelHandlerContext = ctx;
-            networkSide.getNetworkData().encode(msg, out);
-            packetListener.packetWritten(msg, ctx, networkSide);
+            networkSide.getNetworkData().encode(msg.a, msg.b, out);
         }catch(Exception e){
             e.printStackTrace();
         }
     }
 
-    public void addListener(L listener){
-        packetListener.addListener(listener);
-    }
 }

@@ -26,4 +26,11 @@ public class DoublePacket extends Packet {
         super.readBytes(in);
         value = in.readDouble();
     }
+
+    @Override
+    public String toString() {
+        return "DoublePacket{" +
+                "value=" + value +
+                '}';
+    }
 }

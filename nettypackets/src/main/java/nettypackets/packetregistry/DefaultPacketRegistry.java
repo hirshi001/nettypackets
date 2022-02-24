@@ -1,12 +1,14 @@
 package nettypackets.packetregistry;
 
 import nettypackets.packet.Packet;
+import nettypackets.packet.PacketHandler;
 import nettypackets.packet.PacketHolder;
 import nettypackets.util.ByteBufSerializable;
 import nettypackets.util.defaultpackets.arraypackets.*;
 import nettypackets.util.defaultpackets.objectpackets.ByteBufSerializableObjectPacket;
 import nettypackets.util.defaultpackets.objectpackets.ObjectPacket;
 import nettypackets.util.defaultpackets.primitivepackets.*;
+import nettypackets.util.defaultpackets.udppackets.UDPInitialConnectionPacket;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -90,6 +92,12 @@ public class DefaultPacketRegistry implements PacketRegistry{
     public PacketRegistry registerDefaultObjectPackets() {
         register(new PacketHolder<>(ObjectPacket::new, null, ObjectPacket.class), -201);
         //maybe add ObjectArrayPacket
+        return this;
+    }
+
+    @Override
+    public PacketRegistry registerUDPHelperPackets(PacketHandler<UDPInitialConnectionPacket> handler) {
+        register(new PacketHolder<>(UDPInitialConnectionPacket::new, handler, UDPInitialConnectionPacket.class), -301);
         return this;
     }
 }

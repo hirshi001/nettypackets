@@ -2,6 +2,7 @@ package nettypackets.packet;
 
 
 import io.netty.buffer.ByteBuf;
+import nettypackets.network.packethandlercontext.PacketHandlerContext;
 
 import java.util.function.Supplier;
 
@@ -21,5 +22,6 @@ public class PacketHolder<T extends Packet>{
     public T getPacket(){
         return supplier.get();
     }
+
 
 }

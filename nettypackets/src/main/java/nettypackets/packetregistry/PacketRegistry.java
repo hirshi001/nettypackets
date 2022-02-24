@@ -1,7 +1,9 @@
 package nettypackets.packetregistry;
 
 import nettypackets.packet.Packet;
+import nettypackets.packet.PacketHandler;
 import nettypackets.packet.PacketHolder;
+import nettypackets.util.defaultpackets.udppackets.UDPInitialConnectionPacket;
 
 public interface PacketRegistry {
 
@@ -20,5 +22,9 @@ public interface PacketRegistry {
     PacketRegistry registerDefaultArrayPrimitivePackets();
 
     PacketRegistry registerDefaultObjectPackets();
+
+    PacketRegistry registerUDPHelperPackets(PacketHandler<UDPInitialConnectionPacket> handler);
+
+
 
 }

@@ -26,4 +26,11 @@ public class BooleanPacket extends Packet {
         super.readBytes(in);
         value = in.readBoolean();
     }
+
+    @Override
+    public String toString() {
+        return "BooleanPacket{" +
+                "value=" + value +
+                '}';
+    }
 }

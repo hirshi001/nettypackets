@@ -27,4 +27,11 @@ public class StringPacket extends Packet {
         super.readBytes(in);
         value = ByteBufUtil.readStringFromBuf(in);
     }
+
+    @Override
+    public String toString() {
+        return "StringPacket{" +
+                "value='" + value + '\'' +
+                '}';
+    }
 }

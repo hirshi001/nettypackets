@@ -1,11 +1,9 @@
 package nettypackets.restapi;
 
+import io.netty.util.concurrent.DefaultEventExecutor;
 import io.netty.util.concurrent.EventExecutor;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.Promise;
 import nettypackets.restapi.Operation.*;
 
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -13,25 +11,28 @@ import java.util.function.Function;
 
 public class DefaultRestAction<T>  implements RestAction<T>{
 
-    private final Operation<?, T> supplyOperation;
+    protected static final EventExecutor DEFAULT_EVENT_EXECUTOR = new DefaultEventExecutor();
 
-    final AtomicBoolean started;
+    protected final EventExecutor eventExecutor;
+    protected final AtomicBoolean started;
 
-    RestFuture promise;
-    Operation head;
-    Operation tail;
+    protected RestFuture<T> promise;
+    protected Operation<?, T> head;
+    protected Operation tail;
 
-    ScheduledExecutorService executorService;
-    EventExecutor executor;
 
-    public DefaultRestAction(SupplyOperation<T> supplyOperation, ScheduledExecutorService executorService, EventExecutor executor) {
-        this.supplyOperation = new HeadOperation<>(supplyOperation);
-        this.executorService = executorService;
-        this.executor = executor;
+    public DefaultRestAction(SupplyOperation<T> supplyOperation) {
+        this(supplyOperation, DEFAULT_EVENT_EXECUTOR);
+    }
 
-        tail = head = new BlankOperation<T>();
-        promise = new RestFuture(this, executor);
-        this.supplyOperation.promise = promise;
+    public DefaultRestAction(SupplyOperation<T> supplyOperation, EventExecutor eventExecutor) {
+        this.eventExecutor = eventExecutor;
+
+        promise = new RestFuture<>(this, eventExecutor);
+
+        head = tail = new HeadOperation<>(supplyOperation);
+        head.promise = this.promise;
+
         started = new AtomicBoolean(false);
     }
 
@@ -47,33 +48,27 @@ public class DefaultRestAction<T>  implements RestAction<T>{
 
     @Override
     public RestAction<T> pauseFor(long timeout) {
-        return addNewOperation(new PauseOperation<>(timeout, executorService));
+        return pauseFor(timeout, TimeUnit.MILLISECONDS);
     }
 
     public <O> RestAction<O> addNewOperation(Operation<T, O> operation) {
         tail.next = operation;
         tail = tail.next;
-        operation.promise = promise;
+        operation.promise = (RestFuture<O>) promise;
         return (RestAction<O>) this;
     }
 
     @Override
     public RestAction<T> pauseFor(long timeout, TimeUnit unit) {
-        return pauseFor(unit.toMillis(timeout));
+        return addNewOperation(new PauseOperation<>(timeout, unit, eventExecutor));
     }
 
     @Override
     public RestFuture<T> perform() {
-        synchronized (started) {
-            if(started.getAndSet(true)) return promise;
-
-            addNewOperation(new TailOperation<>());
-
-            supplyOperation.next = head;
-            executor.submit(() -> supplyOperation.submitTask(null));
-
-            return promise;
-        }
+        if(started.getAndSet(true)) return promise;
+        addNewOperation(new TailOperation<>());
+        eventExecutor.submit(() -> head.submitTask(null));
+        return promise;
     }
 
     @Override

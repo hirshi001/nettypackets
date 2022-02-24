@@ -38,7 +38,7 @@ public class RequestRandomIntegerPacket extends Packet {
         packetToSend.setResponsePacket(packet); //since we are responding, we must set which packet our packet is responding to
 
         //send the packet back to the client
-        MainServer.server.sendPacket(packetToSend, packet.packetHandlerContext.channelHandlerContext.channel());
+        //MainServer.server.sendPacket(packetToSend, packet.packetHandlerContext.channelHandlerContext.channel());
     }
 
 }

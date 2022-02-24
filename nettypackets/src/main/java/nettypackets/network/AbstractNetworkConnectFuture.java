@@ -6,13 +6,12 @@ import io.netty.channel.ChannelFuture;
 import io.netty.util.concurrent.AbstractFuture;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
-import nettypackets.network.client.Client;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-public abstract class AbstractNetworkConnectFuture<N extends NetworkSide<B>, B extends AbstractBootstrap<B, ? extends Channel>> extends AbstractFuture<N> {
+public abstract class AbstractNetworkConnectFuture<N extends NetworkSide, B extends AbstractBootstrap<B, ? extends Channel>> extends AbstractFuture<N> {
 
     protected N network;
     protected B bootstrap;
@@ -25,7 +24,7 @@ public abstract class AbstractNetworkConnectFuture<N extends NetworkSide<B>, B e
     public AbstractNetworkConnectFuture(N network, B boostrap) {
         this.network = network;
         this.bootstrap = boostrap;
-        this.connectingFuture = network.connect(bootstrap);
+        //this.connectingFuture = network.connect(bootstrap);
         connectingFuture.addListener(new GenericFutureListener<Future<? super Void>>() {
             @Override
             public void operationComplete(Future<? super Void> future) throws Exception {

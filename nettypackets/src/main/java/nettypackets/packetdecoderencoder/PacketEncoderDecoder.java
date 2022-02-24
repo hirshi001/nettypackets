@@ -2,8 +2,12 @@ package nettypackets.packetdecoderencoder;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import nettypackets.network.packethandlercontext.PacketHandlerContext;
 import nettypackets.packet.Packet;
+import nettypackets.packetregistry.PacketRegistry;
 import nettypackets.packetregistrycontainer.PacketRegistryContainer;
+
+import javax.annotation.Nullable;
 
 public interface PacketEncoderDecoder {
 
@@ -15,13 +19,13 @@ public interface PacketEncoderDecoder {
      * @param in the ByteBuf to read from
      * @return the decoded packet or null if the packet could not be decoded because there were not enough bytes
      */
-    public Packet decode(PacketRegistryContainer container, ByteBuf in);
+    public PacketHandlerContext<?> decode(PacketRegistryContainer container, ByteBuf in, @Nullable PacketHandlerContext<?> context);
 
     /**
      * Encodes a single packet into the given ByteBuf.
      * @param packet the packet to encode
      * @param out the ByteBuf to write to
      */
-    public void encode(Packet packet, ByteBuf out);
+    public void encode(Packet packet, PacketRegistryContainer container, PacketRegistry packetRegistry, ByteBuf out);
 
 }

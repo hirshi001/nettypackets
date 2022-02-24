@@ -5,22 +5,22 @@ import nettypackets.packet.Packet;
 
 public class BytePacket extends Packet {
 
-    public byte data;
+    public byte value;
 
     public BytePacket(byte value) {
-        this.data = value;
+        this.value = value;
     }
 
     @Override
     public void writeBytes(ByteBuf out) {
         super.writeBytes(out);
-        out.writeByte(data);
+        out.writeByte(value);
     }
 
     @Override
     public void readBytes(ByteBuf in) {
         super.readBytes(in);
-        data = in.readByte();
+        value = in.readByte();
     }
 
     public BytePacket(){
@@ -28,11 +28,17 @@ public class BytePacket extends Packet {
     }
 
     public byte getValue() {
-        return data;
+        return value;
     }
 
     public void setValue(byte value) {
-        this.data = value;
+        this.value = value;
     }
 
+    @Override
+    public String toString() {
+        return "BytePacket{" +
+                "value=" + value +
+                '}';
+    }
 }

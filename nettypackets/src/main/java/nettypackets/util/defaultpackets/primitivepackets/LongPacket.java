@@ -26,4 +26,11 @@ public class LongPacket extends Packet {
         super.readBytes(in);
         value = in.readLong();
     }
+
+    @Override
+    public String toString() {
+        return "LongPacket{" +
+                "value=" + value +
+                '}';
+    }
 }

@@ -5,103 +5,74 @@ package nettypackets;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.DatagramChannel;
+import io.netty.channel.socket.DatagramPacket;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.DefaultEventExecutor;
+import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Future;
 import logger.ConsoleColors;
 import logger.DateStringFunction;
 import logger.Logger;
-import nettypackets.network.client.Client;
-import nettypackets.network.clientfactory.ClientFactory;
-import nettypackets.network.listeners.AbstractClientListener;
-import nettypackets.network.server.Server;
-import nettypackets.network.serverfactory.ServerFactory;
+import nettypackets.network.client.AbstractClient;
+import nettypackets.network.client.IClient;
+import nettypackets.network.client.TCPClient;
+import nettypackets.network.client.UDPClient;
+import nettypackets.network.listeners.clientlistener.AbstractClientListener;
+import nettypackets.network.listeners.serverlistener.AbstractServerListener;
+import nettypackets.network.packethandlercontext.PacketHandlerContext;
+import nettypackets.network.packethandlercontext.PacketType;
+import nettypackets.network.server.IServer;
+import nettypackets.network.server.TCPServer;
+import nettypackets.network.server.UDPServer;
+import nettypackets.networkdata.DefaultNetworkData;
+import nettypackets.networkdata.NetworkData;
 import nettypackets.packet.Packet;
 import nettypackets.packet.PacketHolder;
 import nettypackets.packetdecoderencoder.PacketEncoderDecoder;
 import nettypackets.packetdecoderencoder.SimplePacketEncoderDecoder;
-import nettypackets.packetregistry.DefaultPacketRegistry;
 import nettypackets.packetregistry.PacketRegistry;
+import nettypackets.packetregistrycontainer.MultiPacketRegistryContainer;
+import nettypackets.packetregistrycontainer.PacketRegistryContainer;
 import nettypackets.restapi.DefaultRestAction;
 import nettypackets.restapi.RestAction;
-import org.junit.Before;
-import org.junit.Test;
+import nettypackets.util.defaultpackets.primitivepackets.StringPacket;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 
 public class LibraryTest {
 
 
-    public static final String NAME = "iogames";
-    public static PacketRegistry serverRegistry;
-
-    public static PacketRegistry clientRegistry;
-
-    public static Server server;
-    public static Client client;
-
     public static PacketEncoderDecoder encoderDecoder;
 
-    public static ClientFactory clientFactory;
-    public static ServerFactory serverFactory;
 
-    @Before
+
+    @BeforeEach
     public void setUp() throws Exception {
         encoderDecoder = new SimplePacketEncoderDecoder();
         System.setOut(new Logger(System.out, System.err, new DateStringFunction(ConsoleColors.RED, "[","]")).debugShort(true).debug());
 
-        serverFactory = ServerFactory.multiPacketRegistryServerFactory().
-                setPort(8080).
-                setPacketEncoderDecoder(encoderDecoder).
-                setBootstrap(new ServerBootstrap().
-                        group(new NioEventLoopGroup(), new NioEventLoopGroup()).
-                        channel(NioServerSocketChannel.class).
-                        option(ChannelOption.SO_BACKLOG, 128).
-                        childOption(ChannelOption.SO_KEEPALIVE, true)).
-                addPacketRegistry(serverRegistry = new DefaultPacketRegistry(NAME)
-                        .register(new PacketHolder<>(TestPacket::new, TestPacket::serverHandle, TestPacket.class), 0)
-                        .register(new PacketHolder<>(TestPacket2::new, TestPacket2::serverHandle, TestPacket2.class), 1)
-                        .registerDefaultArrayPrimitivePackets()
-                        .registerDefaultObjectPackets()
-                        .registerDefaultPrimitivePackets()
-                );
-
-
-
-        clientFactory = newClientFactory();
     }
 
-    private ClientFactory newClientFactory(){
-        return ClientFactory.multiPacketRegistryClientFactory().
-                setIpAddress("localhost").
-                setPort(8080).
-                setPacketEncoderDecoder(encoderDecoder).
-                setBootstrap(new Bootstrap().
-                        group(new NioEventLoopGroup()).
-                        channel(NioSocketChannel.class).
-                        option(ChannelOption.SO_KEEPALIVE, true)
-                ).
-                addPacketRegistry(clientRegistry = new DefaultPacketRegistry(NAME)
-                        .register(new PacketHolder<>(TestPacket::new, TestPacket::clientHandle, TestPacket.class), 0)
-                        .register(new PacketHolder<>(TestPacket2::new, TestPacket2::clientHandle, TestPacket2.class), 1)
-                        .registerDefaultArrayPrimitivePackets()
-                        .registerDefaultObjectPackets()
-                        .registerDefaultPrimitivePackets()
-                );
-    }
 
     @Test
     public void RestActionTest() throws InterruptedException {
         RestAction<Packet> action = new DefaultRestAction<>((next, promise)->{
             next.submitTask(new TestPacket("sup dawgs"));
-        }, new ScheduledThreadPoolExecutor(1), new DefaultEventExecutor());
+        });
 
         Future<String> futureAction = action
                 .then(packet -> System.out.println("Packet received: " + packet))
@@ -119,85 +90,135 @@ public class LibraryTest {
 
 
     @Test
-    public void test() throws InterruptedException {
+    public void TCP_TEST() throws InterruptedException {
 
-        AtomicBoolean flag1 = new AtomicBoolean(false); //client2 connected listener called
-        AtomicBoolean flag2 = new AtomicBoolean(false); //client first then called
-        AtomicBoolean flag3 = new AtomicBoolean(false); //client pauseFor approximatly 1 second passed
-        AtomicBoolean flag4 = new AtomicBoolean(false); //client second then called
-        AtomicBoolean flag5 = new AtomicBoolean(false); //client map called
-        AtomicBoolean flag6 = new AtomicBoolean(false); //client then, is a string
-        AtomicBoolean flag7 = new AtomicBoolean(false); //future listener called
-        AtomicBoolean flag8 = new AtomicBoolean(false); //future is success
+        AtomicBoolean flag1 = new AtomicBoolean(false);
 
-        AtomicBoolean flag9 = new AtomicBoolean(false); //message sent by client and received by server is same
+        EventExecutor eventExecutor = new DefaultEventExecutor();
 
+        PacketRegistryContainer serverPacketRegistryContainer = new MultiPacketRegistryContainer();
+        NetworkData serverNetworkData = new DefaultNetworkData(encoderDecoder, serverPacketRegistryContainer);
+        serverPacketRegistryContainer.getDefaultRegistry().registerDefaultPrimitivePackets();
+        serverPacketRegistryContainer.getDefaultRegistry().register(new PacketHolder<>(TestPacket::new, TestPacket::serverHandle, TestPacket.class), 0);
 
-
-        server = serverFactory.connectServerNowUninterruptibly();
-        client = clientFactory.connectClientNowUninterruptibly();
-        Client client2 = newClientFactory().addListener(new AbstractClientListener(){
+        TCPServer server = new TCPServer(8080, serverNetworkData, eventExecutor);
+        server.addListener(new AbstractServerListener<TCPServer>() {
             @Override
-            public void connected(Client client) {
-                flag1.set(true);
+            public void tcpPacketWritten(Packet packet, PacketRegistry registry, ChannelHandlerContext context, TCPServer side) {
+                super.tcpPacketWritten(packet, registry, context, side);
+                System.out.println("Packet Written from server to client: " + packet);
             }
-        }).connectClientNowUninterruptibly();
+        });
+        server.connect(new ServerBootstrap().
+                group(new NioEventLoopGroup(), new NioEventLoopGroup()).
+                channel(NioServerSocketChannel.class).
+                option(ChannelOption.SO_BACKLOG, 128).
+                childOption(ChannelOption.SO_KEEPALIVE, true)).syncUninterruptibly();
+        Thread.sleep(100);
+        assert server.isConnected();
 
 
-        AtomicLong start = new AtomicLong();
-        AtomicLong time = new AtomicLong();
 
-        String message = "message test";
-        Future<String> futureResponse = client.sendPacketWithResponse(new TestPacket(message).setPacketRegistry(clientRegistry), 1000).
-                then(packet -> {
-                    if(packet instanceof TestPacket){
-                        flag2.set(true);
-                        flag9.set(((TestPacket) packet).message.equals(message));
-                    }
-                    start.set(System.currentTimeMillis());
-                }).
-                pauseFor(1, TimeUnit.SECONDS).
-                then(packet -> {
-                    time.set(System.currentTimeMillis() - start.get());
-                    if(900 < time.get() && time.get() < 1100){
-                        flag3.set(true);
-                    }
-                    if(packet instanceof TestPacket){
-                        flag4.set(true);
-                    }
-                }).
-                map(packet -> {
-                    flag5.set(true);
-                    return ((TestPacket) packet).message.toUpperCase();
-                }).
-                then((string)->{
-                    if(string instanceof String && string != null){
-                        flag6.set(true);
-                    }
-                }).
-                getRestFuture().
-                addListener(future -> {
-                    flag7.set(true);
-                    if(future.isSuccess()) {
-                        flag8.set(true);
-                    }
-                }).
-                perform();
+        PacketRegistryContainer clientPacketRegistryContainer = new MultiPacketRegistryContainer();
+        NetworkData clientNetworkData = new DefaultNetworkData(encoderDecoder, clientPacketRegistryContainer);
 
-        Thread.sleep(5000); //wait for everything to finish
+        clientPacketRegistryContainer.getDefaultRegistry().registerDefaultPrimitivePackets();
+        clientPacketRegistryContainer.getDefaultRegistry().register(new PacketHolder<>(TestPacket::new, TestPacket::clientHandle, TestPacket.class), 0);
 
-        assert futureResponse.isDone() && futureResponse.isSuccess();
-        assert TestPacket.testPacketServerHandleCounter.get()==1;
-        assert TestPacket.testPacketClientHandleCounter.get()==2; //client and client2
+        TCPClient client = new TCPClient("localhost", 8080, clientNetworkData, eventExecutor);
+        client.addListener(new AbstractClientListener<TCPClient>(){
+            @Override
+            public void tcpPacketReceived(PacketHandlerContext<?> context, TCPClient side) {
+                super.tcpPacketReceived(context, side);
+                System.out.println("Packet received on client");
+            }
+        });
+        client.connect(new Bootstrap().
+                group(new NioEventLoopGroup()).
+                channel(NioSocketChannel.class).
+                option(ChannelOption.SO_KEEPALIVE, true)).awaitUninterruptibly();
+        Thread.sleep(100);
+        assert client.isConnected();
+
+
+        client.sendWithResponse(new TestPacket("sup dawgs"), clientPacketRegistryContainer.getDefaultRegistry(), 100)
+                .map(context -> context.packet)
+                .map(packet -> ((StringPacket) packet).value)
+                .then(System.out::print).then((s)->{
+                    flag1.set(true);
+                }).perform().sync();
+
+        Thread.sleep(1000);
         assert flag1.get();
-        assert flag2.get();
-        assert flag3.get();
-        assert flag4.get();
-        assert flag5.get();
-        assert flag6.get();
-        assert flag7.get();
-        assert flag8.get();
-        assert flag9.get();
     }
+
+
+
+    @Test
+    public void UDP_TEST() throws InterruptedException {
+        AtomicBoolean flag1 = new AtomicBoolean(false);
+
+        EventExecutor eventExecutor = new DefaultEventExecutor();
+
+        PacketRegistryContainer serverPacketRegistryContainer = new MultiPacketRegistryContainer();
+        NetworkData serverNetworkData = new DefaultNetworkData(encoderDecoder, serverPacketRegistryContainer);
+        serverPacketRegistryContainer.getDefaultRegistry().registerDefaultPrimitivePackets();
+        serverPacketRegistryContainer.getDefaultRegistry().register(new PacketHolder<>(TestPacket::new, TestPacket::serverHandle, TestPacket.class), 0);
+
+        UDPServer server = new UDPServer(8080, serverNetworkData, eventExecutor);
+        server.connect(new Bootstrap().
+                group(new NioEventLoopGroup()).
+                channel(NioDatagramChannel.class)).syncUninterruptibly();
+
+
+        Thread.sleep(100);
+        assert server.isConnected();
+
+
+        PacketRegistryContainer clientPacketRegistryContainer = new MultiPacketRegistryContainer();
+        NetworkData clientNetworkData = new DefaultNetworkData(encoderDecoder, clientPacketRegistryContainer);
+
+        clientPacketRegistryContainer.getDefaultRegistry().registerDefaultPrimitivePackets();
+        clientPacketRegistryContainer.getDefaultRegistry().register(new PacketHolder<>(TestPacket::new, TestPacket::clientHandle, TestPacket.class), 0);
+
+        UDPClient client = new UDPClient("localhost", 8080, clientNetworkData, eventExecutor);
+
+
+
+        client.connect(new Bootstrap().
+                group(new NioEventLoopGroup()).
+                channel(NioDatagramChannel.class)).awaitUninterruptibly();
+        Thread.sleep(100);
+        assert client.isConnected();
+
+
+        int successCount = 0;
+        for(int i=0;i<100;i++) {
+            boolean success = client.sendWithResponse(new TestPacket("sup dawgs"), clientPacketRegistryContainer.getDefaultRegistry(), 100)
+                    .map(context -> context.packet)
+                    .map(packet -> ((StringPacket) packet).value)
+                    .then((p)->{}).then((s) -> {
+                        flag1.set(true);
+                    }).pauseFor(0).perform().sync().isSuccess();
+            if(success) successCount++;
+        }
+        System.out.println("Success count = " + successCount);
+
+        System.out.println("Going to send");
+        AtomicInteger counter = new AtomicInteger(0);
+        for(int i=0;i<100;i++) {
+        server.getConnections().forEach(connection -> {
+            //System.out.println("HI--");
+            server.sendWithResponse(new TestPacket("sup dawgs"), clientPacketRegistryContainer.getDefaultRegistry(), connection, 100).then((packetHandlerContext)->{
+                    System.out.println(packetHandlerContext.packet);
+                    counter.incrementAndGet();
+                }).perform();
+            });
+        }
+        Thread.sleep(1000);
+        assert flag1.get();
+        assert counter.get()==100;
+    }
+
 
 }

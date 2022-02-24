@@ -9,26 +9,29 @@ import java.util.function.Function;
 
 public abstract class Operation<A, B>{
     public Operation<B, ?> next;
-    public Promise<Object> promise;
+    public RestFuture<B> promise;
 
-    public void submitTask(A input){
-    }
-
+    public abstract void submitTask(A input);
 
     public static interface SupplyOperation<T>{
         void submitTask(Operation<T, ?> next, Promise promise);
     }
 
     static class HeadOperation<A> extends Operation<Object, A>{
-        SupplyOperation supplyOperation;
+        SupplyOperation<A> supplyOperation;
 
-        public HeadOperation(SupplyOperation supplyOperation){
+        public HeadOperation(SupplyOperation<A> supplyOperation){
             this.supplyOperation = supplyOperation;
         }
 
         @Override
         public void submitTask(Object input) {
-            supplyOperation.submitTask(next, promise);
+            try {
+                supplyOperation.submitTask(next, promise);
+            }
+            catch (Exception exception){
+                    promise.setFailure(exception);
+            }
         }
     }
 
@@ -42,7 +45,13 @@ public abstract class Operation<A, B>{
 
         @Override
         public void submitTask(A input) {
-            consumer.accept(input);
+            try {
+                consumer.accept(input);
+            }
+            catch (Exception exception){
+                promise.setFailure(exception);
+                return;
+            }
             next.submitTask(input);
         }
 
@@ -57,6 +66,12 @@ public abstract class Operation<A, B>{
 
         @Override
         public void submitTask(A input) {
+            try{
+                B result = function.apply(input);
+            }catch(Exception e){
+                promise.setFailure(e);
+                return;
+            }
             next.submitTask(function.apply(input));
         }
     }
@@ -64,24 +79,23 @@ public abstract class Operation<A, B>{
     static class PauseOperation<A> extends Operation<A, A>{
 
         long timeout;
+        TimeUnit unit;
         ScheduledExecutorService executorService;
-        public PauseOperation(long timeout, ScheduledExecutorService executorService) {
+
+        public PauseOperation(long timeout, TimeUnit unit, ScheduledExecutorService executorService) {
             this.timeout = timeout;
+            this.unit = unit;
             this.executorService = executorService;
         }
 
         @Override
         public void submitTask(A input) {
-            executorService.schedule(() -> next.submitTask(input), timeout, TimeUnit.MILLISECONDS);
+            executorService.schedule(() -> next.submitTask(input), timeout, unit);
         }
 
     }
 
-    /**
-     *
-     * @param <A>
-     */
-    static class TailOperation<A> extends Operation<A, Void>{
+    static class TailOperation<A> extends Operation<A, A>{
 
         @Override
         public void submitTask(A input) {
