@@ -31,8 +31,7 @@ public class TCPServer extends AbstractServer<TCPServer>  {
     private ChannelGroup channels;
 
     public TCPServer(int port, NetworkData networkData, @Nullable EventExecutor eventExecutor) {
-        super(port, networkData, eventExecutor, PacketType.TCP, null);
-        channels = new DefaultChannelGroup(this.eventExecutor);
+        this(port, networkData, eventExecutor, null);
     }
 
 

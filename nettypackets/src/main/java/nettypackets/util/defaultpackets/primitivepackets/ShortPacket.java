@@ -28,6 +28,15 @@ public class ShortPacket extends Packet {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj == null) return false;
+        if (obj == this) return true;
+        if (!(obj instanceof ShortPacket)) return false;
+        ShortPacket packet = (ShortPacket) obj;
+        return packet.value == value;
+    }
+
+    @Override
     public String toString() {
         return "ShortPacket{" +
                 "value=" + value +

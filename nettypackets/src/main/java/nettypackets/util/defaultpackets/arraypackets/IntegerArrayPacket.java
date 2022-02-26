@@ -3,6 +3,8 @@ package nettypackets.util.defaultpackets.arraypackets;
 import io.netty.buffer.ByteBuf;
 import nettypackets.packet.Packet;
 
+import java.util.Arrays;
+
 public class IntegerArrayPacket extends Packet {
 
     public int[] array;
@@ -32,5 +34,20 @@ public class IntegerArrayPacket extends Packet {
         for (int i = 0; i < size; i++) {
             array[i] = in.readInt();
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) return false;
+        if (obj == this) return true;
+        if (!(obj instanceof IntegerArrayPacket)) return false;
+        IntegerArrayPacket packet = (IntegerArrayPacket) obj;
+        return Arrays.equals(array, packet.array);
+    }
+
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "{ array=" + Arrays.toString(array) + "}";
     }
 }

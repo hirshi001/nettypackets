@@ -26,7 +26,7 @@ public abstract class Packet implements ByteBufSerializable {
      * Sets the packet which this packet is responding to (if it is responding to any packet at all)
      * @param packet
      */
-    public Packet setResponsePacket(Packet packet){
+    public final Packet setResponsePacket(Packet packet){
         int sId = packet.receivingId;
         int rId = packet.sendingId;
         this.sendingId = sId;

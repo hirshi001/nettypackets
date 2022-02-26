@@ -36,7 +36,7 @@ public class UDPClient extends AbstractClient<UDPClient>{
 
     public UDPClient(String host, int port, NetworkData networkData, @Nullable EventExecutor eventExecutor, IClient parentSide) {
         super(host, port, networkData, eventExecutor, PacketType.UDP, parentSide);
-        getNetworkData().getPacketRegistryContainer().getDefaultRegistry().registerUDPHelperPackets(null);
+        getNetworkData().getPacketRegistryContainer().getDefaultRegistry().registerUDPHelperPackets();
     }
 
     @Override

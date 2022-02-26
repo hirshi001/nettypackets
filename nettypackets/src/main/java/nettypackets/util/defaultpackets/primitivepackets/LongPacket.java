@@ -28,6 +28,15 @@ public class LongPacket extends Packet {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj == null) return false;
+        if (obj == this) return true;
+        if (!(obj instanceof LongPacket)) return false;
+        LongPacket packet = (LongPacket) obj;
+        return packet.value == value;
+    }
+
+    @Override
     public String toString() {
         return "LongPacket{" +
                 "value=" + value +

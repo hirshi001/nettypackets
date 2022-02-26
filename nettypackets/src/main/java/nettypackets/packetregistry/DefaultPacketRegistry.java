@@ -8,6 +8,7 @@ import nettypackets.util.defaultpackets.arraypackets.*;
 import nettypackets.util.defaultpackets.objectpackets.ByteBufSerializableObjectPacket;
 import nettypackets.util.defaultpackets.objectpackets.ObjectPacket;
 import nettypackets.util.defaultpackets.primitivepackets.*;
+import nettypackets.util.defaultpackets.systempackets.SetPacketRegistryIDPacket;
 import nettypackets.util.defaultpackets.udppackets.UDPInitialConnectionPacket;
 
 import java.util.HashMap;
@@ -19,6 +20,7 @@ public class DefaultPacketRegistry implements PacketRegistry{
     protected final Map<Integer, PacketHolder<?>> intToPacketHolderMap;
     protected final Map<PacketHolder<?>, Integer> packetHolderIntMap;
     public final String registryName;
+    private int id;
 
     public DefaultPacketRegistry(String registryName){
         this.classIdMap = new HashMap<>();
@@ -60,44 +62,64 @@ public class DefaultPacketRegistry implements PacketRegistry{
         return registryName;
     }
 
+    /*
+    Set the handler for the SystemPackets by getting the holder through the class of the packet
+     */
+    @Override
+    public PacketRegistry registerSystemPackets() {
+        register(new PacketHolder<>(SetPacketRegistryIDPacket::new, null, SetPacketRegistryIDPacket.class), -1);
+        return this;
+    }
+
     @Override
     public PacketRegistry registerDefaultPrimitivePackets() {
-        register(new PacketHolder<>(BooleanPacket::new, null, BooleanPacket.class), -1);
-        register(new PacketHolder<>(BytePacket::new, null, BytePacket.class), -2);
-        register(new PacketHolder<>(CharPacket::new, null, CharPacket.class), -3);
-        register(new PacketHolder<>(DoublePacket::new, null, DoublePacket.class), -4);
-        register(new PacketHolder<>(FloatPacket::new, null, FloatPacket.class), -5);
-        register(new PacketHolder<>(IntegerPacket::new, null, IntegerPacket.class), -6);
-        register(new PacketHolder<>(LongPacket::new, null, LongPacket.class), -7);
-        register(new PacketHolder<>(ShortPacket::new, null, ShortPacket.class), -8);
-        register(new PacketHolder<>(StringPacket::new, null, StringPacket.class), -9);
-        register(new PacketHolder<>(MultiBooleanPacket::new, null, MultiBooleanPacket.class), -10);
+        register(new PacketHolder<>(BooleanPacket::new, null, BooleanPacket.class), -101);
+        register(new PacketHolder<>(BytePacket::new, null, BytePacket.class), -102);
+        register(new PacketHolder<>(CharPacket::new, null, CharPacket.class), -103);
+        register(new PacketHolder<>(DoublePacket::new, null, DoublePacket.class), -104);
+        register(new PacketHolder<>(FloatPacket::new, null, FloatPacket.class), -105);
+        register(new PacketHolder<>(IntegerPacket::new, null, IntegerPacket.class), -106);
+        register(new PacketHolder<>(LongPacket::new, null, LongPacket.class), -107);
+        register(new PacketHolder<>(ShortPacket::new, null, ShortPacket.class), -108);
+        register(new PacketHolder<>(StringPacket::new, null, StringPacket.class), -109);
+        register(new PacketHolder<>(MultiBooleanPacket::new, null, MultiBooleanPacket.class), -110);
         return this;
     }
 
     @Override
     public PacketRegistry registerDefaultArrayPrimitivePackets() {
-        register(new PacketHolder<>(BooleanArrayPacket::new, null, BooleanArrayPacket.class), -101);
-        register(new PacketHolder<>(ByteArrayPacket::new, null, ByteArrayPacket.class), -102);
-        register(new PacketHolder<>(CharArrayPacket::new, null, CharArrayPacket.class), -103);
-        register(new PacketHolder<>(DoubleArrayPacket::new, null, DoubleArrayPacket.class), -104);
-        register(new PacketHolder<>(FloatArrayPacket::new, null, FloatArrayPacket.class), -105);
-        register(new PacketHolder<>(IntegerArrayPacket::new, null, IntegerArrayPacket.class), -106);
-        register(new PacketHolder<>(LongArrayPacket::new, null, LongArrayPacket.class), -107);
-        register(new PacketHolder<>(ShortArrayPacket::new, null, ShortArrayPacket.class), -108);
+        register(new PacketHolder<>(BooleanArrayPacket::new, null, BooleanArrayPacket.class), -201);
+        register(new PacketHolder<>(ByteArrayPacket::new, null, ByteArrayPacket.class), -202);
+        register(new PacketHolder<>(CharArrayPacket::new, null, CharArrayPacket.class), -203);
+        register(new PacketHolder<>(DoubleArrayPacket::new, null, DoubleArrayPacket.class), -204);
+        register(new PacketHolder<>(FloatArrayPacket::new, null, FloatArrayPacket.class), -205);
+        register(new PacketHolder<>(IntegerArrayPacket::new, null, IntegerArrayPacket.class), -206);
+        register(new PacketHolder<>(LongArrayPacket::new, null, LongArrayPacket.class), -207);
+        register(new PacketHolder<>(ShortArrayPacket::new, null, ShortArrayPacket.class), -208);
         return this;
     }
 
     @Override
     public PacketRegistry registerDefaultObjectPackets() {
-        register(new PacketHolder<>(ObjectPacket::new, null, ObjectPacket.class), -201);
+        register(new PacketHolder<>(ObjectPacket::new, null, ObjectPacket.class), -301);
         //maybe add ObjectArrayPacket
         return this;
     }
 
     @Override
     public PacketRegistry registerUDPHelperPackets(PacketHandler<UDPInitialConnectionPacket> handler) {
-        register(new PacketHolder<>(UDPInitialConnectionPacket::new, handler, UDPInitialConnectionPacket.class), -301);
+        register(new PacketHolder<>(UDPInitialConnectionPacket::new, handler, UDPInitialConnectionPacket.class), -401);
+        return this;
+    }
+
+    @Override
+    public int getId() {
+        return id;
+    }
+
+    @Override
+    public PacketRegistry setId(int id) {
+        this.id = id;
         return this;
     }
 }

@@ -12,8 +12,10 @@ import nettypackets.network.packethandlercontext.PacketHandlerContext;
 import nettypackets.network.packethandlercontext.PacketType;
 import nettypackets.networkdata.NetworkData;
 import nettypackets.packet.Packet;
+import nettypackets.packet.PacketHolder;
 import nettypackets.packetregistry.PacketRegistry;
 import nettypackets.restapi.RestAction;
+import nettypackets.util.defaultpackets.systempackets.SetPacketRegistryIDPacket;
 import nettypackets.util.tuple.Pair;
 
 import javax.annotation.Nullable;
@@ -103,4 +105,5 @@ public class TCPClient extends AbstractClient<TCPClient>{
     public boolean isConnected() {
         return connected;
     }
+
 }

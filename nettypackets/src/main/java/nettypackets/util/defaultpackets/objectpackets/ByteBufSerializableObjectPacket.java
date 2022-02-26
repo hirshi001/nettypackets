@@ -7,9 +7,9 @@ import nettypackets.util.ByteBufSerializable;
 import java.util.function.Supplier;
 
 /**
- * Any class which overrides {@link ByteBufSerializable} should implement the Supplier interface's
- * {@link Supplier#get()} method in such a way that it doesn't require any parameters (it should work if the no argument
- * constructor is used).
+ * Any class which overrides {@link ByteBufSerializable} should implement the
+ * {@link ByteBufSerializableObjectPacket#supply()} method to create a new object each time it is called (similar to a
+ * factory method).
  * <br>
  * For example
  * <pre>
@@ -33,7 +33,7 @@ import java.util.function.Supplier;
  *  </pre>
  * @param <T>
  */
-public abstract class ByteBufSerializableObjectPacket<T extends ByteBufSerializable> extends Packet implements Supplier<T> {
+public abstract class ByteBufSerializableObjectPacket<T extends ByteBufSerializable> extends Packet {
 
     private T object;
 
@@ -56,6 +56,10 @@ public abstract class ByteBufSerializableObjectPacket<T extends ByteBufSerializa
         super.readBytes(in);
         object = supply();
         object.readBytes(in);
+    }
+
+    public final T getObject() {
+        return object;
     }
 
     protected abstract T supply();

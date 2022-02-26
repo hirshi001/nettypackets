@@ -6,7 +6,6 @@ import nettypackets.packet.Packet;
 import nettypackets.packet.PacketHolder;
 import nettypackets.packetregistry.PacketRegistry;
 import nettypackets.packetregistrycontainer.PacketRegistryContainer;
-import nettypackets.util.ByteBufUtil;
 
 import javax.annotation.Nullable;
 
@@ -37,9 +36,9 @@ public class SimplePacketEncoderDecoder implements PacketEncoderDecoder {
         int id = in.readInt();
         ByteBuf msg = in.readBytes(size); // Read the packet
 
-        String registryName = ByteBufUtil.readStringFromBuf(msg);
-        PacketRegistry registry = container.get(registryName);
-        if(registry==null) throw new NullPointerException("The registry name " + registryName + " does not exist in the SidedPacketRegistryContainer " + container);
+        int registryId = msg.readInt();
+        PacketRegistry registry = container.get(registryId);
+        if(registry==null) throw new NullPointerException("The registry id " + registryId + " does not exist in the SidedPacketRegistryContainer " + container);
 
         PacketHolder holder = registry.getPacketHolder(id);
 
@@ -61,7 +60,7 @@ public class SimplePacketEncoderDecoder implements PacketEncoderDecoder {
         int startIndex = out.writerIndex(); // start index
         out.writerIndex(startIndex+8); // Reserve space for the length and the id
 
-        ByteBufUtil.writeStringToBuf(packetRegistry.getRegistryName(), out); // Write the registry name
+        out.writeInt(packetRegistry.getId()); // Write the id of the registry
         packet.writeBytes(out); // Write the packet
 
         int lastIdx = out.writerIndex(); // Get the last index

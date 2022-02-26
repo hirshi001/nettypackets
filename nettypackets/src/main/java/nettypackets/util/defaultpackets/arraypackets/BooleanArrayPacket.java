@@ -4,6 +4,8 @@ import io.netty.buffer.ByteBuf;
 import nettypackets.packet.Packet;
 import nettypackets.util.BooleanCompression;
 
+import java.util.Arrays;
+
 public class BooleanArrayPacket extends Packet {
 
     public boolean[] array;
@@ -34,5 +36,19 @@ public class BooleanArrayPacket extends Packet {
         byte[] compression = new byte[(length-1)/8+1];
         in.readBytes(compression);
         array = BooleanCompression.decompressBooleans(compression, length);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) return false;
+        if (obj == this) return true;
+        if (!(obj instanceof BooleanArrayPacket)) return false;
+        BooleanArrayPacket packet = (BooleanArrayPacket) obj;
+        return Arrays.equals(array, packet.array);
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "{ array=" + Arrays.toString(array) + "}";
     }
 }

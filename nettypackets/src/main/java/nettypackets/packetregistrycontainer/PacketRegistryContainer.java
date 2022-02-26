@@ -3,7 +3,16 @@ package nettypackets.packetregistrycontainer;
 import nettypackets.packetregistry.DefaultPacketRegistry;
 import nettypackets.packetregistry.PacketRegistry;
 
+import java.util.Collection;
+
+/**
+ * @author Hrishikesh Ingle
+ * Inteface for classes which store packet registries
+ * The default registry will typically have an integer id of 0 and name of "default"
+ */
 public interface PacketRegistryContainer {
+
+    public static final String DEFAULT_REGISTRY_NAME = "default";
 
 
     /**
@@ -43,4 +52,10 @@ public interface PacketRegistryContainer {
      * @return true if this PacketRegistryContainer supports multiple PacketRegistries
      */
     public boolean supportsMultipleRegistries();
+
+    public void setPacketRegistryID(PacketRegistry registry, int id);
+
+    public PacketRegistry get(int id);
+
+    public Collection<PacketRegistry> registries();
 }

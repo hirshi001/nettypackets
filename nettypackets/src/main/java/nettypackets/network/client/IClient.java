@@ -10,8 +10,10 @@ import nettypackets.network.NetworkSide;
 import nettypackets.network.listeners.clientlistener.ClientListener;
 import nettypackets.network.packethandlercontext.PacketHandlerContext;
 import nettypackets.packet.Packet;
+import nettypackets.packet.PacketHolder;
 import nettypackets.packetregistry.PacketRegistry;
 import nettypackets.restapi.RestAction;
+import nettypackets.util.defaultpackets.systempackets.SetPacketRegistryIDPacket;
 
 public interface IClient<C extends IClient<C>> extends NetworkSide {
 
@@ -38,6 +40,19 @@ public interface IClient<C extends IClient<C>> extends NetworkSide {
     public void addListeners(ClientListener<C>... listeners);
 
     public void removeListeners(ClientListener<C>... listeners);
+
+    default public void init(){
+        PacketRegistry registry = getNetworkData().getPacketRegistryContainer().getDefaultRegistry();
+        registry.registerSystemPackets();
+        PacketHolder<SetPacketRegistryIDPacket> holder = (PacketHolder<SetPacketRegistryIDPacket>) registry.getPacketHolder(registry.getId(SetPacketRegistryIDPacket.class));
+
+        if(holder != null) {
+            holder.handler = context -> {
+                PacketRegistry registryToSet = context.networkData.getPacketRegistryContainer().get(context.packet.registryName);
+                context.networkData.getPacketRegistryContainer().setPacketRegistryID(registryToSet, context.packet.registryId);
+            };
+        }
+    }
 
 
 }

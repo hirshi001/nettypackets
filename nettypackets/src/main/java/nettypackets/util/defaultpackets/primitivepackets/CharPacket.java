@@ -28,6 +28,16 @@ public class CharPacket extends Packet {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj == null) return false;
+        if (obj == this) return true;
+        if (!(obj instanceof CharPacket)) return false;
+        CharPacket packet = (CharPacket) obj;
+        return packet.value == value;
+    }
+
+
+    @Override
     public String toString() {
         return "CharPacket{" +
                 "value=" + value +

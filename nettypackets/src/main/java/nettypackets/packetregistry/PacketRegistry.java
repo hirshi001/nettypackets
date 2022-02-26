@@ -17,13 +17,20 @@ public interface PacketRegistry {
 
     public String getRegistryName();
 
+    public PacketRegistry registerSystemPackets();
+
     PacketRegistry registerDefaultPrimitivePackets();
 
     PacketRegistry registerDefaultArrayPrimitivePackets();
 
     PacketRegistry registerDefaultObjectPackets();
 
-    PacketRegistry registerUDPHelperPackets(PacketHandler<UDPInitialConnectionPacket> handler);
+    PacketRegistry registerUDPHelperPackets();
+
+    public int getId();
+
+    public PacketRegistry setId(int id);
+
 
 
 

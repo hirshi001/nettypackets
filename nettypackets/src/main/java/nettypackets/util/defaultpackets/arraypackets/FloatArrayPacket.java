@@ -3,6 +3,8 @@ package nettypackets.util.defaultpackets.arraypackets;
 import io.netty.buffer.ByteBuf;
 import nettypackets.packet.Packet;
 
+import java.util.Arrays;
+
 public class FloatArrayPacket extends Packet {
     public float[] array;
 
@@ -34,4 +36,18 @@ public class FloatArrayPacket extends Packet {
         }
     }
 
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) return false;
+        if (obj == this) return true;
+        if (!(obj instanceof FloatArrayPacket)) return false;
+        FloatArrayPacket packet = (FloatArrayPacket) obj;
+        return Arrays.equals(array, packet.array);
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "{ array=" + Arrays.toString(array) + "}";
+    }
 }

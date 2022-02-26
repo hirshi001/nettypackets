@@ -101,6 +101,15 @@ public class MultiBooleanPacket extends BytePacket {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj == null) return false;
+        if (obj == this) return true;
+        if (!(obj instanceof MultiBooleanPacket)) return false;
+        MultiBooleanPacket packet = (MultiBooleanPacket) obj;
+        return packet.value == value;
+    }
+
+    @Override
     public String toString() {
         return "MultiBooleanPacket{" +
                 "value=" + Integer.toBinaryString(value) +

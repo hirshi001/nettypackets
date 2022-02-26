@@ -1,10 +1,7 @@
 package nettypackets.network.server;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
-import io.netty.channel.group.ChannelGroupFuture;
 import io.netty.channel.socket.DatagramChannel;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Future;
@@ -15,11 +12,12 @@ import nettypackets.network.packethandlercontext.PacketHandlerContext;
 import nettypackets.network.packethandlercontext.PacketType;
 import nettypackets.networkdata.NetworkData;
 import nettypackets.packet.Packet;
+import nettypackets.packet.PacketHolder;
 import nettypackets.packetregistry.PacketRegistry;
+import nettypackets.packetregistrycontainer.PacketRegistryContainer;
 import nettypackets.restapi.RestAction;
 import nettypackets.util.defaultpackets.primitivepackets.BooleanPacket;
 import nettypackets.util.defaultpackets.udppackets.UDPInitialConnectionPacket;
-import nettypackets.util.tuple.Pair;
 import nettypackets.util.tuple.Triple;
 
 import javax.annotation.Nullable;
@@ -45,15 +43,16 @@ public class UDPServer extends AbstractServer {
 
     public UDPServer(int port, NetworkData networkData, @Nullable EventExecutor eventExecutor, IServer parentSide) {
         super(port, networkData, eventExecutor, PacketType.UDP, parentSide);
-        getNetworkData().getPacketRegistryContainer().getDefaultRegistry().registerUDPHelperPackets(new nettypackets.packet.PacketHandler<UDPInitialConnectionPacket>() {
-            @Override
-            public void handle(PacketHandlerContext<UDPInitialConnectionPacket> context) {
-                connections.add(context.source);
-                send(new BooleanPacket(true).setResponsePacket(context.packet),
-                        context.packetRegistry,
-                        context.source);
-            }
-        });
+
+        PacketRegistry defaultRegistry = getNetworkData().getPacketRegistryContainer().getDefaultRegistry().registerUDPHelperPackets();
+        PacketHolder<UDPInitialConnectionPacket> holder = (PacketHolder<UDPInitialConnectionPacket>) defaultRegistry.getPacketHolder(defaultRegistry.getId(UDPInitialConnectionPacket.class));
+        holder.handler = context -> {
+            connections.add(context.source);
+            send(new BooleanPacket(true).setResponsePacket(context.packet),
+                    context.packetRegistry,
+                    context.source);
+        };
+        getNetworkData().getPacketRegistryContainer().getDefaultRegistry().registerUDPHelperPackets();
     }
 
 

@@ -102,6 +102,7 @@ public class LibraryTest {
         serverPacketRegistryContainer.getDefaultRegistry().register(new PacketHolder<>(TestPacket::new, TestPacket::serverHandle, TestPacket.class), 0);
 
         TCPServer server = new TCPServer(8080, serverNetworkData, eventExecutor);
+        server.init();
         server.addListener(new AbstractServerListener<TCPServer>() {
             @Override
             public void tcpPacketWritten(Packet packet, PacketRegistry registry, ChannelHandlerContext context, TCPServer side) {
@@ -126,6 +127,7 @@ public class LibraryTest {
         clientPacketRegistryContainer.getDefaultRegistry().register(new PacketHolder<>(TestPacket::new, TestPacket::clientHandle, TestPacket.class), 0);
 
         TCPClient client = new TCPClient("localhost", 8080, clientNetworkData, eventExecutor);
+        client.init();
         client.addListener(new AbstractClientListener<TCPClient>(){
             @Override
             public void tcpPacketReceived(PacketHandlerContext<?> context, TCPClient side) {
