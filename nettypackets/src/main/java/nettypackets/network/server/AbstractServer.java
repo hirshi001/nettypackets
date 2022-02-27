@@ -7,8 +7,8 @@ import nettypackets.network.listeners.serverlistener.ServerListener;
 import nettypackets.network.listeners.serverlistener.ServerListenerHandler;
 import nettypackets.network.packethandlercontext.PacketType;
 import nettypackets.networkdata.NetworkData;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 
 public abstract class AbstractServer<S extends IServer<S>> implements IServer<S> {
 

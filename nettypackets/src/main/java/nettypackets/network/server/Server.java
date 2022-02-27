@@ -17,8 +17,8 @@ import nettypackets.networkdata.NetworkData;
 import nettypackets.packet.Packet;
 import nettypackets.packetregistry.PacketRegistry;
 import nettypackets.restapi.RestAction;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.net.InetSocketAddress;
 import java.util.Set;
 

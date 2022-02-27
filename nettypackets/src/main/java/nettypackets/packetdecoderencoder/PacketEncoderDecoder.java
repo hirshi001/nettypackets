@@ -1,13 +1,12 @@
 package nettypackets.packetdecoderencoder;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
 import nettypackets.network.packethandlercontext.PacketHandlerContext;
 import nettypackets.packet.Packet;
 import nettypackets.packetregistry.PacketRegistry;
 import nettypackets.packetregistrycontainer.PacketRegistryContainer;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 
 public interface PacketEncoderDecoder {
 

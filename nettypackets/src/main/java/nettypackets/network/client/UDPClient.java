@@ -15,8 +15,8 @@ import nettypackets.restapi.RestAction;
 import nettypackets.util.tuple.Pair;
 import nettypackets.util.defaultpackets.udppackets.UDPInitialConnectionPacket;
 import nettypackets.util.tuple.Triple;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.concurrent.TimeUnit;

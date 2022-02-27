@@ -14,8 +14,7 @@ import nettypackets.networkdata.NetworkData;
 import nettypackets.packet.Packet;
 import nettypackets.packetregistry.PacketRegistry;
 import nettypackets.restapi.RestAction;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public class Client implements IClient<Client> {
 

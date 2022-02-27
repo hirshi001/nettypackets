@@ -19,8 +19,8 @@ import nettypackets.packet.Packet;
 import nettypackets.packetregistry.PacketRegistry;
 import nettypackets.restapi.RestAction;
 import nettypackets.util.tuple.Pair;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.concurrent.TimeUnit;
 
 public class TCPServer extends AbstractServer<TCPServer>  {

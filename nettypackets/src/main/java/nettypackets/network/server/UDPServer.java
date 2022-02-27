@@ -19,8 +19,8 @@ import nettypackets.restapi.RestAction;
 import nettypackets.util.defaultpackets.primitivepackets.BooleanPacket;
 import nettypackets.util.defaultpackets.udppackets.UDPInitialConnectionPacket;
 import nettypackets.util.tuple.Triple;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.List;

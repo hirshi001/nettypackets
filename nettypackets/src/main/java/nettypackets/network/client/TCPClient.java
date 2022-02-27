@@ -17,8 +17,8 @@ import nettypackets.packetregistry.PacketRegistry;
 import nettypackets.restapi.RestAction;
 import nettypackets.util.defaultpackets.systempackets.SetPacketRegistryIDPacket;
 import nettypackets.util.tuple.Pair;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.concurrent.TimeUnit;
 
 public class TCPClient extends AbstractClient<TCPClient>{

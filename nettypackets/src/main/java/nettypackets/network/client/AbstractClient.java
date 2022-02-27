@@ -8,8 +8,8 @@ import nettypackets.network.listeners.clientlistener.ClientListener;
 import nettypackets.network.listeners.clientlistener.ClientListenerHandler;
 import nettypackets.network.packethandlercontext.PacketType;
 import nettypackets.networkdata.NetworkData;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 
 public abstract class AbstractClient<T extends IClient<T>> implements IClient<T> {
 

@@ -6,8 +6,8 @@ import nettypackets.packet.Packet;
 import nettypackets.packet.PacketHolder;
 import nettypackets.packetregistry.PacketRegistry;
 import nettypackets.packetregistrycontainer.PacketRegistryContainer;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 
 public class SimplePacketEncoderDecoder implements PacketEncoderDecoder {
 
