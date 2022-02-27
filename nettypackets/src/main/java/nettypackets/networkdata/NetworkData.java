@@ -22,7 +22,7 @@ public interface NetworkData {
     }
 
     default void encode(Packet packet, PacketRegistry packetRegistry, ByteBuf out){
-        if(!getPacketRegistryContainer().supportsMultipleRegistries()){
+        if(!getPacketRegistryContainer().supportsMultipleRegistries() || packetRegistry==null){
             packetRegistry = getPacketRegistryContainer().getDefaultRegistry();
         }
         getPacketEncoderDecoder().encode(packet, getPacketRegistryContainer(), packetRegistry, out);

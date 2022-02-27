@@ -23,15 +23,13 @@ import io.netty.util.concurrent.Future;
 import logger.ConsoleColors;
 import logger.DateStringFunction;
 import logger.Logger;
-import nettypackets.network.client.AbstractClient;
-import nettypackets.network.client.IClient;
-import nettypackets.network.client.TCPClient;
-import nettypackets.network.client.UDPClient;
+import nettypackets.network.client.*;
 import nettypackets.network.listeners.clientlistener.AbstractClientListener;
 import nettypackets.network.listeners.serverlistener.AbstractServerListener;
 import nettypackets.network.packethandlercontext.PacketHandlerContext;
 import nettypackets.network.packethandlercontext.PacketType;
 import nettypackets.network.server.IServer;
+import nettypackets.network.server.Server;
 import nettypackets.network.server.TCPServer;
 import nettypackets.network.server.UDPServer;
 import nettypackets.networkdata.DefaultNetworkData;
@@ -220,6 +218,66 @@ public class LibraryTest {
         Thread.sleep(1000);
         assert flag1.get();
         assert counter.get()==100;
+    }
+
+    @Test
+    public void SERVER_CLIENT_TEST() throws InterruptedException {
+        DefaultEventExecutor eventExecutor = new DefaultEventExecutor();
+        Server server = new Server(8080, new DefaultNetworkData(encoderDecoder, new MultiPacketRegistryContainer()), eventExecutor);
+        server.getNetworkData().getPacketRegistryContainer().getDefaultRegistry().registerDefaultPrimitivePackets();
+        server.addListener(new AbstractServerListener<Server>(){
+            @Override
+            public void udpConnected(Server server) {
+                super.udpConnected(server);
+                System.out.println("UDP Connected");
+            }
+
+            @Override
+            public void tcpPacketReceived(PacketHandlerContext<?> context, Server side) {
+                super.tcpPacketReceived(context, side);
+                if(context.packet instanceof StringPacket){
+                    StringPacket packet = (StringPacket) context.packet;
+                    side.sendTCP(new StringPacket("sup dawgs. Server received the message: " + packet.value).setResponsePacket(context.packet), context.packetRegistry, context.ctx.channel());
+                }
+            }
+        });
+        server.startTCPServer(new ServerBootstrap().
+                group(new NioEventLoopGroup(), new NioEventLoopGroup()).
+                channel(NioServerSocketChannel.class).
+                option(ChannelOption.SO_BACKLOG, 128).
+                childOption(ChannelOption.SO_KEEPALIVE, true)).awaitUninterruptibly();
+        server.startUDPServer(new Bootstrap().
+                group(new NioEventLoopGroup()).
+                channel(NioDatagramChannel.class)).awaitUninterruptibly();
+
+        Thread.sleep(100);
+
+        assert server.isTCPConnected();
+        assert server.isUDPConnected();
+        assert server.isConnected();
+
+        Client client = new Client("localhost", 8080, new DefaultNetworkData(encoderDecoder, new MultiPacketRegistryContainer()), eventExecutor);
+        client.getNetworkData().getPacketRegistryContainer().getDefaultRegistry().registerDefaultPrimitivePackets();
+        client.startTCPClient(new Bootstrap().
+                group(new NioEventLoopGroup()).
+                channel(NioSocketChannel.class)).awaitUninterruptibly();
+        client.startUDPClient(new Bootstrap().
+                group(new NioEventLoopGroup()).
+                channel(NioDatagramChannel.class)).awaitUninterruptibly();
+
+        Thread.sleep(100);
+
+        assert client.isTCPConnected();
+        assert client.isUDPConnected();
+        assert client.isConnected();
+
+        client.sendTCPWithResponse(new StringPacket("HI BITCH"), null, 1000)
+                .map(packetHandlerContext -> packetHandlerContext.packet.toString())
+                .then((string)->{
+                    System.out.println("Message recieved from server is " + string);
+                }).perform();
+        Thread.sleep(1000);
+
     }
 
 

@@ -39,7 +39,6 @@ public class UDPClient extends AbstractClient<UDPClient>{
         getNetworkData().getPacketRegistryContainer().getDefaultRegistry().registerUDPHelperPackets();
     }
 
-    @Override
     public ChannelFuture connect(Bootstrap bootstrap) {
         bootstrap.handler(new ChannelInitializer<DatagramChannel>() {
             @Override

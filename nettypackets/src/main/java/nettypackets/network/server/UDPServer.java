@@ -28,7 +28,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-public class UDPServer extends AbstractServer {
+public class UDPServer extends AbstractServer<UDPServer> {
 
     protected EventLoopGroup udpEventLoopGroup;
     protected boolean connected;
@@ -107,11 +107,9 @@ public class UDPServer extends AbstractServer {
         });
         udpEventLoopGroup = bootstrap.config().group();
         return bootstrap.bind(port).addListener((ChannelFutureListener) future -> {
-            if(future.isSuccess()){
                 listenerHandler.udpConnected(parentOrThis());
                 connected = true;
                 channel = future.channel();
-            }
         });
     }
 

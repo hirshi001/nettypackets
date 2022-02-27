@@ -35,7 +35,6 @@ public class TCPClient extends AbstractClient<TCPClient>{
     }
 
 
-    @Override
     public ChannelFuture connect(Bootstrap bootstrap) {
         bootstrap.handler(new ChannelInitializer<Channel>() {
             @Override
@@ -53,6 +52,7 @@ public class TCPClient extends AbstractClient<TCPClient>{
                     @Override
                     protected void channelRead0(ChannelHandlerContext ctx, PacketHandlerContext<?> msg) throws Exception {
                         super.channelRead0(ctx, msg);
+                        System.out.println("RECEIVED");
                         packetResponseManager.success(msg);
                         listenerHandler.tcpPacketReceived(msg, TCPClient.this);
                     }

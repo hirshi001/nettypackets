@@ -29,7 +29,7 @@ public class Server implements IServer<Server> {
     protected final EventExecutor executor;
     protected final NetworkData networkData;
     protected final int port;
-    protected final ServerListenerHandler<Server> listenerHandler;
+    protected final ServerListenerHandler listenerHandler;
 
     public Server(int port, NetworkData networkData, @Nullable EventExecutor executor){
         this.port = port;
@@ -38,8 +38,11 @@ public class Server implements IServer<Server> {
 
         tcpServer = new TCPServer(port, networkData, executor, this);
         udpServer = new UDPServer(port, networkData, executor, this);
-
         listenerHandler = new ServerListenerHandler<>();
+
+        tcpServer.addListener(listenerHandler);
+        udpServer.addListener(listenerHandler);
+
 
     }
 
@@ -154,7 +157,15 @@ public class Server implements IServer<Server> {
 
     @Override
     public boolean isConnected() {
-        return false;
+        return udpServer.isConnected() && tcpServer.isConnected();
+    }
+
+    public boolean isTCPConnected(){
+        return tcpServer.isConnected();
+    }
+
+    public boolean isUDPConnected(){
+        return udpServer.isConnected();
     }
 
     @Override

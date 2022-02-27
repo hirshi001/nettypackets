@@ -27,8 +27,6 @@ public interface IClient<C extends IClient<C>> extends NetworkSide {
         return false;
     }
 
-    public ChannelFuture connect(Bootstrap bootstrap);
-
     public Future<?> disconnect();
 
     public boolean isConnected();

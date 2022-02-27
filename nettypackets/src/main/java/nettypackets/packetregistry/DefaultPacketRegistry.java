@@ -107,8 +107,8 @@ public class DefaultPacketRegistry implements PacketRegistry{
     }
 
     @Override
-    public PacketRegistry registerUDPHelperPackets(PacketHandler<UDPInitialConnectionPacket> handler) {
-        register(new PacketHolder<>(UDPInitialConnectionPacket::new, handler, UDPInitialConnectionPacket.class), -401);
+    public PacketRegistry registerUDPHelperPackets() {
+        register(new PacketHolder<>(UDPInitialConnectionPacket::new, null, UDPInitialConnectionPacket.class), -401);
         return this;
     }
 

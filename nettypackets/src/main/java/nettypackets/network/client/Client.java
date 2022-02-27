@@ -26,7 +26,7 @@ public class Client implements IClient<Client> {
     protected final String host;
     protected final int port;
 
-    protected final ClientListenerHandler<Client> listenerHandler;
+    protected final ClientListenerHandler listenerHandler;
 
     public Client(String host, int port, NetworkData networkData, @Nullable EventExecutor executor){
         this.host = host;
@@ -38,6 +38,8 @@ public class Client implements IClient<Client> {
         udpClient = new UDPClient(host, port, networkData, executor, this);
 
         listenerHandler = new ClientListenerHandler<>();
+        tcpClient.addListener(listenerHandler);
+        udpClient.addListener(listenerHandler);
     }
 
     public ChannelFuture startTCPClient(Bootstrap bootstrap){
@@ -77,11 +79,6 @@ public class Client implements IClient<Client> {
     @Override
     public NetworkData getNetworkData() {
         return networkData;
-    }
-
-    @Override
-    public ChannelFuture connect(Bootstrap bootstrap) {
-        return null;
     }
 
     /*
@@ -146,7 +143,15 @@ public class Client implements IClient<Client> {
 
     @Override
     public boolean isConnected() {
-        return tcpClient.isConnected() || udpClient.isConnected();
+        return tcpClient.isConnected() && udpClient.isConnected();
+    }
+
+    public boolean isTCPConnected(){
+        return tcpClient.isConnected();
+    }
+
+    public boolean isUDPConnected(){
+        return udpClient.isConnected();
     }
 
     @Override
