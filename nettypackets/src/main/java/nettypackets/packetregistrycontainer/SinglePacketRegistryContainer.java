@@ -1,10 +1,10 @@
 package nettypackets.packetregistrycontainer;
 
-import com.sun.tools.javac.util.List;
 import nettypackets.packetregistry.DefaultPacketRegistry;
 import nettypackets.packetregistry.PacketRegistry;
 
 import java.util.Collection;
+import java.util.Collections;
 
 public class SinglePacketRegistryContainer implements PacketRegistryContainer{
 
@@ -50,6 +50,6 @@ public class SinglePacketRegistryContainer implements PacketRegistryContainer{
 
     @Override
     public Collection<PacketRegistry> registries() {
-        return List.of(registry);
+        return Collections.singleton(registry);
     }
 }
