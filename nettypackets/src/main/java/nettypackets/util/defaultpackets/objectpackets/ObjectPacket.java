@@ -1,5 +1,6 @@
 package nettypackets.util.defaultpackets.objectpackets;
 
+import io.github.pixee.security.ObjectInputFilters;
 import io.netty.buffer.ByteBuf;
 import nettypackets.packet.Packet;
 
@@ -50,6 +51,7 @@ public class ObjectPacket<T> extends Packet {
             in.readBytes(data);
             ByteArrayInputStream byteInStream = new ByteArrayInputStream(data);
             ObjectInputStream inputStream = new ObjectInputStream(byteInStream);
+            ObjectInputFilters.enableObjectFilterIfUnprotected(inputStream);
             object = (T)inputStream.readObject();
         } catch (IOException | ClassNotFoundException e) {
             cause = e;
